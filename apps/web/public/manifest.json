@@ -1,0 +1,17 @@
+{
+  "name": "ParcelTime",
+  "short_name": "ParcelTime",
+  "description": "Smart Residential Parcel Concierge & Spatial Logistics",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0D0101",
+  "theme_color": "#FF5D00",
+  "icons": [
+    {
+      "src": "/icon.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    }
+  ]
+}
+

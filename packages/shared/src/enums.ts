@@ -1,0 +1,136 @@
+export enum ParcelStatus {
+  RECEIVED = 'RECEIVED',
+  SCHEDULED = 'SCHEDULED',
+  ASSIGNED = 'ASSIGNED',
+  OUT_FOR_DELIVERY = 'OUT_FOR_DELIVERY',
+  DELIVERED = 'DELIVERED',
+  CANCELLED = 'CANCELLED',
+  UNCLAIMED = 'UNCLAIMED',
+  RETURNED_TO_COURIER = 'RETURNED_TO_COURIER',
+}
+
+export enum UserRole {
+  PLATFORM_ADMIN = 'PLATFORM_ADMIN',
+  SOCIETY_ADMIN = 'SOCIETY_ADMIN',
+  RECEPTION = 'RECEPTION',
+  DELIVERY_EXECUTIVE = 'DELIVERY_EXECUTIVE',
+  RESIDENT = 'RESIDENT',
+}
+
+export enum MemberStatus {
+  INVITED = 'INVITED',
+  ACTIVE = 'ACTIVE',
+  SUSPENDED = 'SUSPENDED',
+}
+
+export enum UnitMembershipType {
+  OWNER = 'OWNER',
+  TENANT = 'TENANT',
+  FAMILY = 'FAMILY',
+}
+
+export enum UnitMembershipStatus {
+  PENDING = 'PENDING',
+  ACTIVE = 'ACTIVE',
+  ENDED = 'ENDED',
+}
+
+export enum InviteStatus {
+  PENDING = 'PENDING',
+  ACCEPTED = 'ACCEPTED',
+  REVOKED = 'REVOKED',
+  EXPIRED = 'EXPIRED',
+}
+
+export enum JoinRequestStatus {
+  PENDING = 'PENDING',
+  APPROVED = 'APPROVED',
+  REJECTED = 'REJECTED',
+}
+
+export enum DeliveryScheduleStatus {
+  ACTIVE = 'ACTIVE',
+  CANCELLED = 'CANCELLED',
+  COMPLETED = 'COMPLETED',
+  SUPERSEDED = 'SUPERSEDED',
+}
+
+export enum TaskStatus {
+  OPEN = 'OPEN',
+  ASSIGNED = 'ASSIGNED',
+  IN_PROGRESS = 'IN_PROGRESS',
+  DONE = 'DONE',
+  FAILED = 'FAILED',
+  CANCELLED = 'CANCELLED',
+}
+
+export enum DeliveryAttemptOutcome {
+  DELIVERED = 'DELIVERED',
+  FAILED = 'FAILED',
+}
+
+export enum VerificationMethod {
+  OTP = 'OTP',
+  STAFF_OVERRIDE = 'STAFF_OVERRIDE',
+  IDENTITY_CHECK = 'IDENTITY_CHECK',
+}
+
+export enum FailureReason {
+  NOT_AT_HOME = 'NOT_AT_HOME',
+  REFUSED = 'REFUSED',
+  WRONG_ADDRESS = 'WRONG_ADDRESS',
+  OTP_NOT_AVAILABLE = 'OTP_NOT_AVAILABLE',
+  OTHER = 'OTHER',
+}
+
+export enum SlotInstanceStatus {
+  OPEN = 'OPEN',
+  BLOCKED = 'BLOCKED',
+}
+
+export enum OtpChallengeStatus {
+  ACTIVE = 'ACTIVE',
+  VERIFIED = 'VERIFIED',
+  EXPIRED = 'EXPIRED',
+  LOCKED = 'LOCKED',
+  REPLACED = 'REPLACED',
+}
+
+export enum PickupRequestStatus {
+  REQUESTED = 'REQUESTED',
+  COMPLETED = 'COMPLETED',
+  CANCELLED = 'CANCELLED',
+  EXPIRED = 'EXPIRED',
+}
+
+export enum OutboxEventStatus {
+  PENDING = 'PENDING',
+  PROCESSED = 'PROCESSED',
+  FAILED = 'FAILED',
+}
+
+export enum NotificationCategory {
+  PARCEL_RECEIVED = 'PARCEL_RECEIVED',
+  SCHEDULE_CONFIRMED = 'SCHEDULE_CONFIRMED',
+  SCHEDULE_CHANGED = 'SCHEDULE_CHANGED',
+  REMINDER = 'REMINDER',
+  TASK_ASSIGNED = 'TASK_ASSIGNED',
+  OUT_FOR_DELIVERY = 'OUT_FOR_DELIVERY',
+  DELIVERED = 'DELIVERED',
+  DELIVERY_FAILED = 'DELIVERY_FAILED',
+  PICKUP_READY = 'PICKUP_READY',
+  UNCLAIMED_WARNING = 'UNCLAIMED_WARNING',
+  JOIN_DECISION = 'JOIN_DECISION',
+  OVERRIDE_FLAGGED = 'OVERRIDE_FLAGGED',
+}
+
+export enum AssignmentMode {
+  ADMIN = 'ADMIN',
+  POOL = 'POOL',
+}
+
+export enum SocietyStatus {
+  ACTIVE = 'ACTIVE',
+  INACTIVE = 'INACTIVE',
+  SETUP = 'SETUP',
+}
