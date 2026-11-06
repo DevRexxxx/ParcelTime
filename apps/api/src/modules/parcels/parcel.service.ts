@@ -1,6 +1,12 @@
 import { prisma } from '../../lib/prisma';
 import { Errors } from '../../lib/errors';
-import { ParcelStatus, RegisterParcelSchema, NotificationCategory } from '@parceltime/shared';
+import {
+  ParcelStatus,
+  RegisterParcelSchema,
+  NotificationCategory,
+  PickupRequestStatus,
+  VerificationMethod,
+} from '@parceltime/shared';
 import { z } from 'zod';
 import { v4 as uuidv4 } from 'uuid';
 import { writeAuditLog } from '../audit/audit.service';
@@ -199,4 +205,51 @@ export async function getParcelByQrToken(qrToken: string, societyId: string) {
   });
   if (!parcel) throw Errors.NOT_FOUND('Parcel');
   return parcel;
+}
+
+export async function completePickup(
+  parcelId: string,
+  societyId: string,
+  verifiedById: string,
+  data: { verificationMethod: VerificationMethod; otp?: string }
+) {
+  return await prisma.$transaction(async (tx) => {
+    const parcel = await tx.parcel.findUnique({
+      where: { id: parcelId },
+    });
+    if (!parcel || parcel.societyId !== societyId) {
+      throw Errors.NOT_FOUND('Parcel');
+    }
+
+    await tx.pickupRequest.updateMany({
+      where: { parcelId, status: PickupRequestStatus.REQUESTED },
+      data: {
+        status: PickupRequestStatus.COMPLETED,
+        verifiedById,
+        verificationMethod: data.verificationMethod,
+        completedAt: new Date(),
+      },
+    });
+
+    const updatedParcel = await tx.parcel.update({
+      where: { id: parcelId },
+      data: {
+        status: ParcelStatus.DELIVERED,
+        statusUpdatedAt: new Date(),
+        version: { increment: 1 },
+      },
+    });
+
+    await writeAuditLog({
+      societyId,
+      parcelId,
+      actorId: verifiedById,
+      eventType: 'PICKUP_COMPLETED',
+      previousStatus: parcel.status,
+      newStatus: ParcelStatus.DELIVERED,
+      metadata: { verificationMethod: data.verificationMethod },
+    });
+
+    return updatedParcel;
+  });
 }

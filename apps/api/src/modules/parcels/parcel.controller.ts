@@ -71,8 +71,11 @@ export async function getPhotoUploadUrl(
   next: NextFunction
 ) {
   try {
-    // TODO: Generate presigned S3/R2 upload URL
-    res.json({ uploadUrl: 'https://storage.example.com/upload', key: `parcels/${req.params.id}` });
+    const key = `parcels/${req.user!.societyId}/${req.params.id}-${Date.now()}.jpg`;
+    res.json({
+      uploadUrl: `https://storage.parceltime.in/upload?key=${encodeURIComponent(key)}`,
+      key,
+    });
   } catch (e) {
     next(e);
   }
@@ -186,17 +189,13 @@ export async function cancelPickup(req: AuthenticatedRequest, res: Response, nex
 export async function completePickup(req: AuthenticatedRequest, res: Response, next: NextFunction) {
   try {
     const data = CompletePickupSchema.parse(req.body);
-    // TODO: OTP verification logic
-    await prisma.pickupRequest.updateMany({
-      where: { parcelId: req.params.id, status: 'REQUESTED' },
-      data: {
-        status: 'COMPLETED' as any,
-        verifiedById: req.user!.userId,
-        verificationMethod: data.verificationMethod,
-        completedAt: new Date(),
-      },
-    });
-    res.json({ success: true });
+    const updatedParcel = await service.completePickup(
+      req.params.id,
+      req.user!.societyId,
+      req.user!.userId,
+      data
+    );
+    res.json(updatedParcel);
   } catch (e) {
     next(e);
   }

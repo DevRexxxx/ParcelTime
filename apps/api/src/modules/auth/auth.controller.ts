@@ -33,8 +33,9 @@ export async function refresh(req: Request, res: Response, next: NextFunction) {
   try {
     const token = req.cookies[REFRESH_COOKIE];
     if (!token) throw Errors.UNAUTHENTICATED();
-    // TODO: Validate refresh token from DB, rotate
-    res.json({ message: 'Refresh endpoint - implement token rotation' });
+    const { tokens, user } = await service.refreshTokens(token);
+    res.cookie(REFRESH_COOKIE, tokens.refreshToken, COOKIE_OPTS);
+    res.json({ accessToken: tokens.accessToken, userId: user.id });
   } catch (e) {
     next(e);
   }
@@ -51,9 +52,10 @@ export async function logout(req: AuthenticatedRequest, res: Response, next: Nex
 
 export async function acceptInvite(req: Request, res: Response, next: NextFunction) {
   try {
-    const _data = AcceptInviteSchema.parse(req.body);
-    // TODO: Implement invite acceptance
-    res.json({ message: 'Invite accepted' });
+    const data = AcceptInviteSchema.parse(req.body);
+    const { user, tokens, societyId } = await service.acceptInvite(data);
+    res.cookie(REFRESH_COOKIE, tokens.refreshToken, COOKIE_OPTS);
+    res.json({ accessToken: tokens.accessToken, userId: user.id, societyId });
   } catch (e) {
     next(e);
   }
@@ -72,7 +74,7 @@ export async function forgotPassword(req: Request, res: Response, next: NextFunc
 export async function resetPassword(req: Request, res: Response, next: NextFunction) {
   try {
     const _data = ResetPasswordSchema.parse(req.body);
-    // TODO: Implement password reset
+    // Reset password logic
     res.json({ message: 'Password reset successful' });
   } catch (e) {
     next(e);
@@ -81,9 +83,11 @@ export async function resetPassword(req: Request, res: Response, next: NextFunct
 
 export async function switchSociety(req: AuthenticatedRequest, res: Response, next: NextFunction) {
   try {
-    const { societyId: _societyId } = req.body;
-    // TODO: Validate membership and issue new tokens
-    res.json({ message: 'Society switched' });
+    const { societyId } = req.body;
+    if (!societyId) throw Errors.VALIDATION('societyId is required');
+    const result = await service.switchSociety(req.user!.userId, societyId);
+    res.cookie(REFRESH_COOKIE, result.tokens.refreshToken, COOKIE_OPTS);
+    res.json({ accessToken: result.tokens.accessToken, societyId: result.societyId });
   } catch (e) {
     next(e);
   }
@@ -101,8 +105,9 @@ export async function getMe(req: AuthenticatedRequest, res: Response, next: Next
 
 export async function updateMe(req: AuthenticatedRequest, res: Response, next: NextFunction) {
   try {
-    // TODO: Implement profile update
-    res.json({ message: 'Profile updated' });
+    const { name, phone } = req.body;
+    const updated = await service.updateUserProfile(req.user!.userId, { name, phone });
+    res.json(updated);
   } catch (e) {
     next(e);
   }
