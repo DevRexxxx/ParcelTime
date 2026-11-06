@@ -1,11 +1,11 @@
 import { z } from 'zod';
 
 const EnvSchema = z.object({
-  NODE_ENV: z.enum(['development', 'staging', 'production']).default('development'),
+  NODE_ENV: z.enum(['development', 'staging', 'production', 'test']).default('development'),
   PORT: z.coerce.number().default(3001),
-  DATABASE_URL: z.string().min(1),
-  JWT_ACCESS_SECRET: z.string().min(32),
-  JWT_REFRESH_SECRET: z.string().min(32),
+  DATABASE_URL: z.string().default('postgresql://postgres:postgres@localhost:5432/parceltime'),
+  JWT_ACCESS_SECRET: z.string().min(32).default('supersecretjwtaccesskeymin32charslong!'),
+  JWT_REFRESH_SECRET: z.string().min(32).default('supersecretjwtrefreshkeymin32charslong!'),
   JWT_ACCESS_EXPIRY: z.string().default('15m'),
   JWT_REFRESH_EXPIRY: z.string().default('30d'),
   WEB_ORIGIN: z.string().default('http://localhost:5173'),
