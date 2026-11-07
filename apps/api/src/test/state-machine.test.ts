@@ -30,3 +30,4 @@ describe('Parcel State Machine Transitions', () => {
     expect(canTransition(ParcelStatus.RETURNED_TO_COURIER, ParcelStatus.RECEIVED)).toBe(false);
   });
 });
+
