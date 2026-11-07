@@ -23,6 +23,12 @@ societyRouter.post(
 
 // Unit routes
 societyRouter.get('/units', controller.listUnits);
+societyRouter.get('/units/search', controller.searchUnits);
+societyRouter.post(
+  '/units/import',
+  requireRoles(UserRole.SOCIETY_ADMIN, UserRole.PLATFORM_ADMIN) as any,
+  controller.bulkImportUnits
+);
 societyRouter.post(
   '/units',
   requireRoles(UserRole.SOCIETY_ADMIN, UserRole.PLATFORM_ADMIN) as any,
@@ -44,6 +50,16 @@ societyRouter.post(
   '/invites',
   requireRoles(UserRole.SOCIETY_ADMIN, UserRole.RECEPTION, UserRole.PLATFORM_ADMIN) as any,
   controller.createInvite
+);
+societyRouter.post(
+  '/invites/:id/resend',
+  requireRoles(UserRole.SOCIETY_ADMIN, UserRole.PLATFORM_ADMIN) as any,
+  controller.resendInvite
+);
+societyRouter.post(
+  '/invites/:id/revoke',
+  requireRoles(UserRole.SOCIETY_ADMIN, UserRole.PLATFORM_ADMIN) as any,
+  controller.revokeInvite
 );
 societyRouter.delete(
   '/invites/:id',

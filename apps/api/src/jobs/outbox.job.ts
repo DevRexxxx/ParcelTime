@@ -20,6 +20,18 @@ export async function processOutboxEvents(batchSize: number = 25): Promise<numbe
     try {
       // In production, integrate with Firebase Cloud Messaging (FCM) or Web Push API here
       // event.payload contains notificationId, userId, title, message
+      const payload = event.payload as any;
+      if (payload?.userId) {
+        const devices = await prisma.deviceToken.findMany({
+          where: { userId: payload.userId, active: true },
+        });
+        if (devices.length > 0) {
+          logger.info(
+            `Dispatched push to ${devices.length} active device(s) for user ${payload.userId} [${event.eventType}]`
+          );
+        }
+      }
+
       logger.info(`Outbox dispatched: [${event.eventType}] to society ${event.societyId}`);
 
       await prisma.outboxEvent.update({

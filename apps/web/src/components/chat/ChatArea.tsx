@@ -82,6 +82,7 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
                 onOpenRegister={onOpenRegister}
                 voiceActive={voiceActive}
                 setVoiceActive={setVoiceActive}
+                onSelectPrompt={(p) => onSendMessage(p)}
               />
             )}
           </div>

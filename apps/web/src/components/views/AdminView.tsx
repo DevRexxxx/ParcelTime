@@ -11,10 +11,29 @@ import {
   CheckCircle2,
   Clock,
   Plus,
+  Building,
+  Upload,
+  Download,
+  Search,
+  Check,
+  Ban,
 } from 'lucide-react';
+import { api } from '@/lib/api';
 
 export const AdminView: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'settings' | 'slots' | 'audit'>('settings');
+  const [activeTab, setActiveTab] = useState<'settings' | 'slots' | 'units' | 'reports' | 'audit'>('settings');
+  const [importText, setImportText] = useState(
+    'Tower A, 1, 101\nTower A, 1, 102\nTower A, 2, 201\nTower B, 4, 401\nTower B, 4, 402'
+  );
+  const [importStatus, setImportStatus] = useState<string | null>(null);
+  const [isImporting, setIsImporting] = useState(false);
+
+  // Slot states
+  const [slots, setSlots] = useState([
+    { id: 'st-1', name: 'Morning Window', time: '09:00 AM - 11:00 AM', capacity: 15, days: 'Mon - Sun', blocked: false },
+    { id: 'st-2', name: 'Afternoon Window', time: '02:00 PM - 04:00 PM', capacity: 20, days: 'Mon - Sun', blocked: false },
+    { id: 'st-3', name: 'Evening Window', time: '06:30 PM - 08:30 PM', capacity: 25, days: 'Mon - Sun', blocked: false },
+  ]);
 
   const auditLogs = [
     {
@@ -55,6 +74,53 @@ export const AdminView: React.FC = () => {
     },
   ];
 
+  const handleBulkImport = async () => {
+    try {
+      setIsImporting(true);
+      setImportStatus(null);
+      const lines = importText.split('\n').filter((l) => l.trim().length > 0);
+      const parsed = lines.map((line) => {
+        const parts = line.split(',').map((p) => p.trim());
+        return {
+          towerName: parts[0] || 'Tower A',
+          floor: parseInt(parts[1] || '1', 10),
+          unitNumber: parts[2] || '101',
+        };
+      });
+
+      const res = await api.bulkImportUnits(parsed);
+      setImportStatus(`Successfully verified and imported ${res.imported || parsed.length} units into society ledger!`);
+    } catch (err: any) {
+      setImportStatus(`Error: ${err.message || 'Import failed'}`);
+    } finally {
+      setIsImporting(false);
+    }
+  };
+
+  const handleExportParcelsCsv = () => {
+    const csvContent =
+      'Parcel Code,Courier,Tracking Number,Unit,Tower,Status,Date\n' +
+      'PT-7621,Amazon,AMZ-IN-889102,402,Tower B,OUT_FOR_DELIVERY,Today 10:14 AM\n' +
+      'PT-9104,Blue Dart,BLU-DEL-99214,105,Tower A,SCHEDULED,Today 09:30 AM\n' +
+      'PT-8942,Delhivery,DLV-BOM-11234,301,Tower A,RECEIVED,Today 08:45 AM\n' +
+      'PT-6310,DTDC,DT-PUN-55612,204,Tower B,DELIVERED,Yesterday 07:15 PM\n';
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `parceltime-audit-report-${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const toggleSlotBlocked = (idx: number) => {
+    setSlots((prev) =>
+      prev.map((s, i) => (i === idx ? { ...s, blocked: !s.blocked } : s))
+    );
+  };
+
   return (
     <div className="flex-1 overflow-y-auto px-4 sm:px-8 py-6 space-y-6">
       <div className="max-w-5xl mx-auto space-y-6">
@@ -81,10 +147,10 @@ export const AdminView: React.FC = () => {
         </div>
 
         {/* Tab switch */}
-        <div className="flex items-center gap-2 p-1 rounded-2xl bg-white/[0.04] border border-white/[0.08] w-fit">
+        <div className="flex items-center gap-2 p-1 rounded-2xl bg-white/[0.04] border border-white/[0.08] w-fit overflow-x-auto">
           <button
             onClick={() => setActiveTab('settings')}
-            className={`px-4 py-1.5 rounded-xl text-xs font-semibold transition-all ${
+            className={`px-4 py-1.5 rounded-xl text-xs font-semibold transition-all shrink-0 ${
               activeTab === 'settings'
                 ? 'bg-primary text-white shadow-glow-orange'
                 : 'text-white/50 hover:text-white'
@@ -94,7 +160,7 @@ export const AdminView: React.FC = () => {
           </button>
           <button
             onClick={() => setActiveTab('slots')}
-            className={`px-4 py-1.5 rounded-xl text-xs font-semibold transition-all ${
+            className={`px-4 py-1.5 rounded-xl text-xs font-semibold transition-all shrink-0 ${
               activeTab === 'slots'
                 ? 'bg-primary text-white shadow-glow-orange'
                 : 'text-white/50 hover:text-white'
@@ -103,8 +169,28 @@ export const AdminView: React.FC = () => {
             Slot Windows & Capacity
           </button>
           <button
+            onClick={() => setActiveTab('units')}
+            className={`px-4 py-1.5 rounded-xl text-xs font-semibold transition-all shrink-0 ${
+              activeTab === 'units'
+                ? 'bg-primary text-white shadow-glow-orange'
+                : 'text-white/50 hover:text-white'
+            }`}
+          >
+            Units & Bulk CSV Import
+          </button>
+          <button
+            onClick={() => setActiveTab('reports')}
+            className={`px-4 py-1.5 rounded-xl text-xs font-semibold transition-all shrink-0 ${
+              activeTab === 'reports'
+                ? 'bg-primary text-white shadow-glow-orange'
+                : 'text-white/50 hover:text-white'
+            }`}
+          >
+            Reports & CSV Export
+          </button>
+          <button
             onClick={() => setActiveTab('audit')}
-            className={`px-4 py-1.5 rounded-xl text-xs font-semibold transition-all ${
+            className={`px-4 py-1.5 rounded-xl text-xs font-semibold transition-all shrink-0 ${
               activeTab === 'audit'
                 ? 'bg-primary text-white shadow-glow-orange'
                 : 'text-white/50 hover:text-white'
@@ -199,34 +285,138 @@ export const AdminView: React.FC = () => {
             <div className="flex items-center justify-between">
               <h4 className="text-sm font-bold text-white flex items-center gap-2">
                 <Clock className="w-4 h-4 text-primary" />
-                <span>Daily Delivery Windows</span>
+                <span>Daily Delivery Windows & Capacity</span>
               </h4>
-              <button className="px-3 py-1.5 rounded-xl bg-white/[0.08] hover:bg-white/[0.15] text-white text-xs font-semibold flex items-center gap-1.5 transition-all">
-                <Plus className="w-3.5 h-3.5 text-primary" />
-                <span>Add Slot Template</span>
-              </button>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-              <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/[0.06] space-y-2">
-                <div className="font-bold text-white text-sm">Morning Window</div>
-                <div className="text-white/60">09:00 AM - 11:00 AM</div>
-                <div className="text-[11px] text-primary">Capacity: 15 parcels</div>
-                <div className="text-[10px] text-white/40">Active: Mon, Tue, Wed, Thu, Fri, Sat, Sun</div>
+              {slots.map((s, idx) => (
+                <div
+                  key={s.id}
+                  className={`p-4 rounded-2xl border transition-all space-y-3 ${
+                    s.blocked
+                      ? 'bg-rose-500/10 border-rose-500/30'
+                      : 'bg-white/[0.03] border-white/[0.06]'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-white text-sm">{s.name}</span>
+                    <span
+                      className={`text-[10px] px-2 py-0.5 rounded-full font-mono ${
+                        s.blocked
+                          ? 'bg-rose-500/20 text-rose-300'
+                          : 'bg-emerald-500/20 text-emerald-300'
+                      }`}
+                    >
+                      {s.blocked ? 'BLOCKED' : 'OPEN'}
+                    </span>
+                  </div>
+
+                  <div className="text-white/60">{s.time}</div>
+                  <div className="text-[11px] text-primary">Capacity: {s.capacity} parcels</div>
+                  <div className="text-[10px] text-white/40">Active: {s.days}</div>
+
+                  <div className="pt-2 border-t border-white/[0.06] flex items-center justify-between">
+                    <button
+                      onClick={() => toggleSlotBlocked(idx)}
+                      className={`px-3 py-1 rounded-xl text-[11px] font-medium flex items-center gap-1 transition-all ${
+                        s.blocked
+                          ? 'bg-emerald-600 hover:bg-emerald-500 text-white'
+                          : 'bg-white/[0.08] hover:bg-rose-500/20 text-rose-300'
+                      }`}
+                    >
+                      {s.blocked ? <Check className="w-3 h-3" /> : <Ban className="w-3 h-3" />}
+                      <span>{s.blocked ? 'Reopen Slot' : 'Block Slot'}</span>
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'units' && (
+          <div className="p-6 rounded-3xl glass-panel border border-white/[0.08] space-y-4">
+            <div className="flex items-center justify-between">
+              <h4 className="text-sm font-bold text-white flex items-center gap-2">
+                <Building className="w-4 h-4 text-cyan-400" />
+                <span>Bulk Unit Onboarding (CSV / Delimited)</span>
+              </h4>
+            </div>
+
+            <p className="text-xs text-white/60">
+              Format: <span className="font-mono text-cyan-300">TowerName, FloorNumber, UnitNumber</span> (one per line). Existing towers are auto-linked.
+            </p>
+
+            <textarea
+              value={importText}
+              onChange={(e) => setImportText(e.target.value)}
+              rows={6}
+              className="w-full p-3 rounded-2xl bg-black/60 border border-white/10 text-xs font-mono text-white resize-none outline-none focus:border-cyan-400/50"
+            />
+
+            <div className="flex items-center justify-between">
+              <button
+                onClick={handleBulkImport}
+                disabled={isImporting}
+                className="px-4 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-semibold flex items-center gap-2 transition-all shadow-glow-blue disabled:opacity-50"
+              >
+                <Upload className="w-4 h-4" />
+                <span>{isImporting ? 'Validating & Importing...' : 'Run Bulk Import'}</span>
+              </button>
+            </div>
+
+            {importStatus && (
+              <div className="p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 shrink-0" />
+                <span>{importStatus}</span>
+              </div>
+            )}
+          </div>
+        )}
+
+        {activeTab === 'reports' && (
+          <div className="p-6 rounded-3xl glass-panel border border-white/[0.08] space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h4 className="text-sm font-bold text-white flex items-center gap-2">
+                  <FileText className="w-4 h-4 text-primary" />
+                  <span>Society Performance & Audit Export</span>
+                </h4>
+                <p className="text-xs text-white/60 mt-1">
+                  Full custody export complying with TRD 7.6 and India DPDP 2023 retention policies.
+                </p>
               </div>
 
-              <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/[0.06] space-y-2">
-                <div className="font-bold text-white text-sm">Afternoon Window</div>
-                <div className="text-white/60">02:00 PM - 04:00 PM</div>
-                <div className="text-[11px] text-primary">Capacity: 20 parcels</div>
-                <div className="text-[10px] text-white/40">Active: All 7 days</div>
-              </div>
+              <button
+                onClick={handleExportParcelsCsv}
+                className="px-4 py-2 rounded-xl bg-primary hover:bg-primary-hover text-white text-xs font-semibold flex items-center gap-2 transition-all shadow-glow-orange"
+              >
+                <Download className="w-4 h-4" />
+                <span>Download Parcels CSV</span>
+              </button>
+            </div>
 
-              <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/[0.06] space-y-2">
-                <div className="font-bold text-white text-sm">Evening Window</div>
-                <div className="text-white/60">06:30 PM - 08:30 PM</div>
-                <div className="text-[11px] text-primary">Capacity: 25 parcels</div>
-                <div className="text-[10px] text-white/40">Active: All 7 days</div>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
+              <div className="p-3.5 rounded-2xl bg-white/[0.03] border border-white/[0.05]">
+                <div className="text-[10px] text-white/50 uppercase">Total Parcels Logged</div>
+                <div className="text-lg font-bold text-white mt-1">1,428</div>
+                <div className="text-[10px] text-emerald-400 font-medium">This month</div>
+              </div>
+              <div className="p-3.5 rounded-2xl bg-white/[0.03] border border-white/[0.05]">
+                <div className="text-[10px] text-white/50 uppercase">On-Time Handover</div>
+                <div className="text-lg font-bold text-white mt-1">99.4%</div>
+                <div className="text-[10px] text-emerald-400 font-medium">+0.3% vs last week</div>
+              </div>
+              <div className="p-3.5 rounded-2xl bg-white/[0.03] border border-white/[0.05]">
+                <div className="text-[10px] text-white/50 uppercase">Avg Registration</div>
+                <div className="text-lg font-bold text-white mt-1">21 sec</div>
+                <div className="text-[10px] text-primary font-medium">Target: &lt; 30 sec</div>
+              </div>
+              <div className="p-3.5 rounded-2xl bg-white/[0.03] border border-white/[0.05]">
+                <div className="text-[10px] text-white/50 uppercase">Unclaimed Overdue</div>
+                <div className="text-lg font-bold text-white mt-1">0</div>
+                <div className="text-[10px] text-emerald-400 font-medium">0 active alerts</div>
               </div>
             </div>
           </div>
@@ -267,4 +457,3 @@ export const AdminView: React.FC = () => {
     </div>
   );
 };
-

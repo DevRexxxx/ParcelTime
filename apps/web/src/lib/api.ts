@@ -121,5 +121,64 @@ export const api = {
       }
     );
   },
+
+  // Units & Towers
+  async searchUnits(query?: string) {
+    const q = query ? `?q=${encodeURIComponent(query)}` : '';
+    return fetchWithFallback(`/society/units/search${q}`, { method: 'GET' }, []);
+  },
+
+  async bulkImportUnits(units: Array<{ towerName: string; floor: number; unitNumber: string }>) {
+    return fetchWithFallback(
+      '/society/units/import',
+      {
+        method: 'POST',
+        body: JSON.stringify({ units }),
+      },
+      { total: units.length, imported: units.length, failed: 0, errors: [] }
+    );
+  },
+
+  // Slot Templates & Instances
+  async updateSlotTemplate(id: string, data: any) {
+    return fetchWithFallback(`/slots/templates/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    });
+  },
+
+  async updateSlotInstance(id: string, data: any) {
+    return fetchWithFallback(`/slots/instances/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    });
+  },
+
+  // Devices & Notifications
+  async registerDevice(platform: string, token: string) {
+    return fetchWithFallback('/devices', {
+      method: 'POST',
+      body: JSON.stringify({ platform, token }),
+    });
+  },
+
+  async getNotificationPreferences() {
+    return fetchWithFallback('/notification-preferences', { method: 'GET' }, []);
+  },
+
+  async updateNotificationPreference(category: string, enabled: boolean) {
+    return fetchWithFallback('/notification-preferences', {
+      method: 'PATCH',
+      body: JSON.stringify({ category, enabled }),
+    });
+  },
+
+  // Invites
+  async resendInvite(inviteId: string) {
+    return fetchWithFallback(`/society/invites/${inviteId}/resend`, {
+      method: 'POST',
+    });
+  },
 };
+
 

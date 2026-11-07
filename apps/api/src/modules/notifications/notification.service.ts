@@ -96,3 +96,60 @@ export async function markAllAsRead(userId: string, societyId: string) {
   });
 }
 
+export async function registerDevice(userId: string, platform: string, token: string) {
+  return await prisma.deviceToken.upsert({
+    where: { token },
+    create: {
+      userId,
+      platform,
+      token,
+      active: true,
+      lastSeen: new Date(),
+    },
+    update: {
+      userId,
+      platform,
+      active: true,
+      lastSeen: new Date(),
+    },
+  });
+}
+
+export async function unregisterDevice(userId: string, token: string) {
+  return await prisma.deviceToken.updateMany({
+    where: { userId, token },
+    data: { active: false },
+  });
+}
+
+export async function getNotificationPreferences(userId: string) {
+  const prefs = await prisma.notificationPreference.findMany({
+    where: { userId },
+  });
+  return prefs;
+}
+
+export async function updateNotificationPreference(
+  userId: string,
+  category: NotificationCategory,
+  enabled: boolean
+) {
+  return await prisma.notificationPreference.upsert({
+    where: {
+      userId_category: {
+        userId,
+        category,
+      },
+    },
+    create: {
+      userId,
+      category,
+      enabled,
+    },
+    update: {
+      enabled,
+    },
+  });
+}
+
+

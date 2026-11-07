@@ -9,6 +9,7 @@ import { reportRouter } from './modules/reports/report.router';
 import { auditRouter } from './modules/audit/audit.router';
 import { healthRouter } from './modules/health/health.router';
 import { authenticate } from './middleware/authenticate';
+import * as notificationController from './modules/notifications/notification.controller';
 
 export function createRouter() {
   const router = Router();
@@ -26,6 +27,12 @@ export function createRouter() {
   router.use('/notifications', notificationRouter);
   router.use('/reports', reportRouter);
   router.use('/audit-logs', auditRouter);
+
+  // Direct TRD Aliases
+  router.post('/devices', notificationController.registerDevice);
+  router.delete('/devices/:token', notificationController.unregisterDevice);
+  router.get('/notification-preferences', notificationController.getPreferences);
+  router.patch('/notification-preferences', notificationController.updatePreferences);
 
   return router;
 }

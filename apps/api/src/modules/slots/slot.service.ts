@@ -426,3 +426,94 @@ export async function cancelSchedule(
   });
 }
 
+export async function updateTemplate(
+  societyId: string,
+  templateId: string,
+  data: Partial<z.infer<typeof SlotTemplateSchema>>
+) {
+  const existing = await prisma.slotTemplate.findFirst({
+    where: { id: templateId, societyId },
+  });
+  if (!existing) throw Errors.NOT_FOUND('SlotTemplate');
+
+  return await prisma.slotTemplate.update({
+    where: { id: templateId },
+    data,
+  });
+}
+
+export async function updateSlotInstance(
+  societyId: string,
+  instanceId: string,
+  data: { capacity?: number; status?: SlotInstanceStatus },
+  actorId: string
+) {
+  return await prisma.$transaction(async (tx) => {
+    const instance = await tx.slotInstance.findFirst({
+      where: { id: instanceId, societyId },
+      include: {
+        schedules: {
+          where: { status: DeliveryScheduleStatus.ACTIVE },
+          include: { parcel: true },
+        },
+      },
+    });
+
+    if (!instance) throw Errors.NOT_FOUND('SlotInstance');
+
+    // If changing to BLOCKED, cancel affected schedules and move parcels back to RECEIVED
+    if (data.status === SlotInstanceStatus.BLOCKED && instance.status !== SlotInstanceStatus.BLOCKED) {
+      for (const schedule of instance.schedules) {
+        await tx.deliverySchedule.update({
+          where: { id: schedule.id },
+          data: { status: DeliveryScheduleStatus.CANCELLED },
+        });
+
+        await tx.deliveryTask.updateMany({
+          where: { scheduleId: schedule.id, status: { in: [TaskStatus.OPEN, TaskStatus.ASSIGNED] } },
+          data: { status: TaskStatus.CANCELLED },
+        });
+
+        await tx.parcel.update({
+          where: { id: schedule.parcelId },
+          data: {
+            status: ParcelStatus.RECEIVED,
+            statusUpdatedAt: new Date(),
+            version: { increment: 1 },
+          },
+        });
+
+        await writeAuditLog({
+          societyId,
+          parcelId: schedule.parcelId,
+          actorId,
+          eventType: 'SLOT_BLOCKED_CANCELLED',
+          previousStatus: ParcelStatus.SCHEDULED,
+          newStatus: ParcelStatus.RECEIVED,
+          metadata: { instanceId, reason: 'Slot blocked by admin' },
+        });
+
+        await createNotification({
+          societyId,
+          userId: schedule.requestedById,
+          type: NotificationCategory.SCHEDULE_CHANGED,
+          title: 'Delivery Slot Cancelled',
+          message: `Your scheduled delivery window for parcel ${schedule.parcel.parcelCode} was cancelled due to a schedule change. Please reschedule at your convenience.`,
+          relatedParcelId: schedule.parcelId,
+        });
+      }
+    }
+
+    const updated = await tx.slotInstance.update({
+      where: { id: instanceId },
+      data: {
+        capacity: data.capacity !== undefined ? data.capacity : undefined,
+        status: data.status !== undefined ? data.status : undefined,
+      },
+    });
+
+    return updated;
+  });
+}
+
+

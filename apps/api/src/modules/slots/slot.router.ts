@@ -11,8 +11,25 @@ slotRouter.post(
   requireRoles(UserRole.SOCIETY_ADMIN, UserRole.PLATFORM_ADMIN) as any,
   controller.createTemplate
 );
+slotRouter.patch(
+  '/templates/:id',
+  requireRoles(UserRole.SOCIETY_ADMIN, UserRole.PLATFORM_ADMIN) as any,
+  controller.updateTemplate
+);
 
 slotRouter.get('/available', controller.listAvailableSlots);
+slotRouter.get('/availability', controller.listAvailableSlots);
+
+slotRouter.patch(
+  '/instances/:id',
+  requireRoles(UserRole.SOCIETY_ADMIN, UserRole.PLATFORM_ADMIN) as any,
+  controller.updateSlotInstance
+);
+slotRouter.patch(
+  '/slot-instances/:id',
+  requireRoles(UserRole.SOCIETY_ADMIN, UserRole.PLATFORM_ADMIN) as any,
+  controller.updateSlotInstance
+);
 
 slotRouter.post('/:parcelId/book', controller.bookSlot);
 slotRouter.post('/:parcelId/reschedule', controller.rescheduleSlot);

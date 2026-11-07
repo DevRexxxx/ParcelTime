@@ -1,7 +1,13 @@
 import { Response, NextFunction } from 'express';
 import { AuthenticatedRequest } from '../../middleware/authenticate';
 import * as service from './slot.service';
-import { SlotTemplateSchema, BookSlotSchema, RescheduleSchema } from '@parceltime/shared';
+import {
+  SlotTemplateSchema,
+  BookSlotSchema,
+  RescheduleSchema,
+  UpdateSlotTemplateSchema,
+  UpdateSlotInstanceSchema,
+} from '@parceltime/shared';
 
 export async function createTemplate(
   req: AuthenticatedRequest,
@@ -104,4 +110,42 @@ export async function cancelSchedule(
     next(e);
   }
 }
+
+export async function updateTemplate(
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction
+) {
+  try {
+    const data = UpdateSlotTemplateSchema.parse(req.body);
+    const template = await service.updateTemplate(
+      req.user!.societyId,
+      req.params.id,
+      data
+    );
+    res.json(template);
+  } catch (e) {
+    next(e);
+  }
+}
+
+export async function updateSlotInstance(
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction
+) {
+  try {
+    const data = UpdateSlotInstanceSchema.parse(req.body);
+    const instance = await service.updateSlotInstance(
+      req.user!.societyId,
+      req.params.id,
+      data,
+      req.user!.userId
+    );
+    res.json(instance);
+  } catch (e) {
+    next(e);
+  }
+}
+
 

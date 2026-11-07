@@ -15,6 +15,7 @@ import {
   ShieldCheck,
   Clock,
   ArrowRight,
+  Code2,
 } from 'lucide-react';
 import { ChatMessage, ParcelItem } from '@/lib/types';
 
@@ -23,6 +24,7 @@ interface MessageBubbleProps {
   onSelectSlot?: (slotId: string) => void;
   onOpenSchedule?: (parcel: ParcelItem) => void;
   onOpenOtp?: (parcel: ParcelItem) => void;
+  onRegenerate?: () => void;
 }
 
 export const MessageBubble: React.FC<MessageBubbleProps> = ({
@@ -30,10 +32,12 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
   onSelectSlot,
   onOpenSchedule,
   onOpenOtp,
+  onRegenerate,
 }) => {
   const isUser = message.sender === 'user';
   const [copied, setCopied] = useState(false);
   const [liked, setLiked] = useState<boolean | null>(null);
+  const [shared, setShared] = useState(false);
 
   const handleCopy = () => {
     navigator.clipboard.writeText(message.content);
@@ -41,8 +45,87 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const handleShare = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: 'ParcelTime Delivery Update',
+          text: message.content,
+        });
+      } catch (err) {
+        // Fallback to copy
+        handleCopy();
+      }
+    } else {
+      handleCopy();
+      setShared(true);
+      setTimeout(() => setShared(false), 2000);
+    }
+  };
+
+  // Basic Markdown parser for bold, inline code, and code blocks
+  const renderFormattedContent = (content: string) => {
+    if (content.includes('```')) {
+      const parts = content.split(/(```[\s\S]*?```)/g);
+      return parts.map((part, i) => {
+        if (part.startsWith('```') && part.endsWith('```')) {
+          const lines = part.slice(3, -3).trim().split('\n');
+          const lang = lines[0].match(/^[a-z]+/i) ? lines[0] : '';
+          const code = lang ? lines.slice(1).join('\n') : lines.join('\n');
+          return (
+            <div key={i} className="my-2 rounded-2xl bg-black/60 border border-white/10 overflow-hidden font-mono text-xs">
+              <div className="flex items-center justify-between px-3 py-1.5 bg-white/[0.04] border-b border-white/[0.06] text-[10px] text-white/50">
+                <span className="flex items-center gap-1.5 text-primary">
+                  <Code2 className="w-3 h-3" />
+                  {lang || 'code'}
+                </span>
+                <button
+                  onClick={() => navigator.clipboard.writeText(code)}
+                  className="hover:text-white transition-colors"
+                >
+                  Copy code
+                </button>
+              </div>
+              <pre className="p-3 text-emerald-300 overflow-x-auto whitespace-pre">{code}</pre>
+            </div>
+          );
+        }
+        return <span key={i} className="whitespace-pre-wrap">{formatInline(part)}</span>;
+      });
+    }
+
+    return <div className="whitespace-pre-wrap">{formatInline(content)}</div>;
+  };
+
+  const formatInline = (text: string) => {
+    const boldRegex = /\*\*(.*?)\*\*/g;
+    const parts = [];
+    let lastIndex = 0;
+    let match;
+
+    while ((match = boldRegex.exec(text)) !== null) {
+      if (match.index > lastIndex) {
+        parts.push(text.substring(lastIndex, match.index));
+      }
+      parts.push(
+        <strong key={match.index} className="font-semibold text-white">
+          {match[1]}
+        </strong>
+      );
+      lastIndex = match.index + match[0].length;
+    }
+    if (lastIndex < text.length) {
+      parts.push(text.substring(lastIndex));
+    }
+    return parts.length > 0 ? parts : text;
+  };
+
   return (
-    <div className={`flex w-full mb-6 ${isUser ? 'justify-end' : 'justify-start'} animate-in fade-in slide-in-from-bottom-2`}>
+    <div
+      className={`flex w-full mb-6 ${
+        isUser ? 'justify-end' : 'justify-start'
+      } animate-in fade-in slide-in-from-bottom-2`}
+    >
       <div className={`flex gap-3 max-w-2xl ${isUser ? 'flex-row-reverse' : 'flex-row'}`}>
         {/* Avatar */}
         <div
@@ -65,8 +148,8 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
             }`}
           >
             {/* Message Content */}
-            <div className="text-sm leading-relaxed whitespace-pre-wrap font-normal">
-              {message.content}
+            <div className="text-sm leading-relaxed font-normal">
+              {renderFormattedContent(message.content)}
             </div>
 
             {/* Action Cards inside Assistant Response */}
@@ -192,6 +275,22 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
               >
                 <ThumbsDown className="w-3.5 h-3.5" />
               </button>
+              {onRegenerate && (
+                <button
+                  onClick={onRegenerate}
+                  className="p-1.5 rounded-lg hover:text-white hover:bg-white/[0.06] transition-all"
+                  title="Regenerate response"
+                >
+                  <RotateCcw className="w-3.5 h-3.5" />
+                </button>
+              )}
+              <button
+                onClick={handleShare}
+                className="p-1.5 rounded-lg hover:text-white hover:bg-white/[0.06] transition-all"
+                title="Share update"
+              >
+                {shared ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Share2 className="w-3.5 h-3.5" />}
+              </button>
               <span className="text-[10px] ml-2 text-white/30">{message.timestamp}</span>
             </div>
           )}
@@ -200,4 +299,3 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
     </div>
   );
 };
-

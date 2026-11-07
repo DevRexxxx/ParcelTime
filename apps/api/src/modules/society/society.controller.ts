@@ -10,6 +10,7 @@ import {
   CreateInviteSchema,
   JoinRequestSchema,
   StorageLocationSchema,
+  BulkImportUnitsSchema,
   UserRole,
 } from '@parceltime/shared';
 
@@ -98,6 +99,117 @@ export async function getUnit(req: AuthenticatedRequest, res: Response, next: Ne
   }
 }
 
+export async function searchUnits(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+  try {
+    const query = ((req.query.q as string) || '').trim();
+    if (!query) {
+      const units = await prisma.unit.findMany({
+        where: { societyId: req.user!.societyId },
+        take: 20,
+        include: { tower: true, members: { include: { user: true } } },
+        orderBy: [{ tower: { name: 'asc' } }, { unitNumber: 'asc' }],
+      });
+      res.json(units);
+      return;
+    }
+
+    const units = await prisma.unit.findMany({
+      where: {
+        societyId: req.user!.societyId,
+        OR: [
+          { unitNumber: { contains: query, mode: 'insensitive' } },
+          { tower: { name: { contains: query, mode: 'insensitive' } } },
+          {
+            members: {
+              some: {
+                user: {
+                  OR: [
+                    { name: { contains: query, mode: 'insensitive' } },
+                    { phone: { contains: query, mode: 'insensitive' } },
+                  ],
+                },
+              },
+            },
+          },
+        ],
+      },
+      take: 20,
+      include: { tower: true, members: { include: { user: true } } },
+      orderBy: [{ tower: { name: 'asc' } }, { unitNumber: 'asc' }],
+    });
+    res.json(units);
+  } catch (e) {
+    next(e);
+  }
+}
+
+export async function bulkImportUnits(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+  try {
+    const data = BulkImportUnitsSchema.parse(req.body);
+    const societyId = req.user!.societyId;
+    let imported = 0;
+    const errors: Array<{ row: number; unitNumber: string; error: string }> = [];
+
+    // Cache towers by name
+    const existingTowers = await prisma.tower.findMany({
+      where: { societyId },
+    });
+    const towerMap = new Map<string, string>();
+    existingTowers.forEach((t) => towerMap.set(t.name.toLowerCase().trim(), t.id));
+
+    for (let i = 0; i < data.units.length; i++) {
+      const row = data.units[i];
+      try {
+        const normalizedTower = row.towerName.trim();
+        let towerId = towerMap.get(normalizedTower.toLowerCase());
+        if (!towerId) {
+          const createdTower = await prisma.tower.create({
+            data: { societyId, name: normalizedTower },
+          });
+          towerId = createdTower.id;
+          towerMap.set(normalizedTower.toLowerCase(), towerId);
+        }
+
+        await prisma.unit.upsert({
+          where: {
+            societyId_towerId_unitNumber: {
+              societyId,
+              towerId,
+              unitNumber: row.unitNumber.trim(),
+            },
+          },
+          create: {
+            societyId,
+            towerId,
+            unitNumber: row.unitNumber.trim(),
+            floor: row.floor,
+          },
+          update: {
+            floor: row.floor,
+          },
+        });
+        imported++;
+      } catch (err: any) {
+        errors.push({
+          row: i + 1,
+          unitNumber: row.unitNumber,
+          error: err.message || 'Failed to import unit',
+        });
+      }
+    }
+
+    res.status(201).json({
+      total: data.units.length,
+      imported,
+      failed: errors.length,
+      errors,
+    });
+  } catch (e) {
+    next(e);
+  }
+}
+
+
 export async function listMembers(req: AuthenticatedRequest, res: Response, next: NextFunction) {
   try {
     const members = await prisma.societyMember.findMany({
@@ -170,6 +282,34 @@ export async function revokeInvite(req: AuthenticatedRequest, res: Response, nex
     next(e);
   }
 }
+
+export async function resendInvite(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+  try {
+    const invite = await prisma.invite.findFirst({
+      where: { id: req.params.id, societyId: req.user!.societyId },
+    });
+    if (!invite) throw Errors.NOT_FOUND('Invite');
+
+    const crypto = await import('crypto');
+    const tokenRaw = crypto.randomBytes(32).toString('hex');
+    const tokenHash = crypto.createHash('sha256').update(tokenRaw).digest('hex');
+    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
+
+    const updated = await prisma.invite.update({
+      where: { id: req.params.id },
+      data: {
+        tokenHash,
+        expiresAt,
+        status: 'PENDING' as any,
+      },
+    });
+
+    res.json({ ...updated, token: tokenRaw });
+  } catch (e) {
+    next(e);
+  }
+}
+
 
 export async function listJoinRequests(
   req: AuthenticatedRequest,

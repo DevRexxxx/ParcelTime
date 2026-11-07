@@ -1,5 +1,12 @@
 import { z } from 'zod';
-import { UserRole, UnitMembershipType, FailureReason, VerificationMethod } from './enums';
+import {
+  UserRole,
+  UnitMembershipType,
+  FailureReason,
+  VerificationMethod,
+  SlotInstanceStatus,
+  NotificationCategory,
+} from './enums';
 
 // Auth schemas
 export const LoginSchema = z.object({
@@ -154,3 +161,37 @@ export const CompletePickupSchema = z.object({
   otp: z.string().length(6).optional(),
   idempotencyKey: z.string().min(1).max(100),
 });
+
+// Device & Notification Schemas
+export const RegisterDeviceSchema = z.object({
+  platform: z.string().min(1).max(50),
+  token: z.string().min(1).max(1000),
+});
+
+export const UpdateNotificationPreferencesSchema = z.object({
+  category: z.nativeEnum(NotificationCategory),
+  enabled: z.boolean(),
+});
+
+// Unit Import & Search Schemas
+export const BulkImportUnitsSchema = z.object({
+  units: z
+    .array(
+      z.object({
+        towerName: z.string().min(1).max(100),
+        floor: z.number().int().min(-5).max(200),
+        unitNumber: z.string().min(1).max(20),
+      })
+    )
+    .min(1)
+    .max(2000),
+});
+
+// Slot Instance & Template Updates
+export const UpdateSlotTemplateSchema = SlotTemplateSchema.partial();
+
+export const UpdateSlotInstanceSchema = z.object({
+  capacity: z.number().int().min(0).max(1000).optional(),
+  status: z.nativeEnum(SlotInstanceStatus).optional(),
+});
+
