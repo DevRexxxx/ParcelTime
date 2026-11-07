@@ -18,7 +18,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-1.0.0--MVP-FF5D00?style=flat-square" alt="Version 1.0.0" />
+  <img src="https://img.shields.io/badge/version-2.0.0-FF5D00?style=flat-square" alt="Version 2.0.0" />
   <img src="https://img.shields.io/badge/monorepo-turborepo-blue?style=flat-square&logo=turborepo" alt="Turborepo" />
   <img src="https://img.shields.io/badge/next.js-14-black?style=flat-square&logo=next.js" alt="Next.js 14" />
   <img src="https://img.shields.io/badge/react-18-61dafb?style=flat-square&logo=react" alt="React 18" />
@@ -410,12 +410,22 @@ All endpoints require JWT Bearer authorization, except public `/health` and `/au
 | `/parcels/:id/pickup-complete`| `POST` | Reception, Admin | Verify resident identity and mark parcel `DELIVERED`. |
 | `/parcels/:id/return-to-courier` | `POST` | Reception, Admin | Hand parcel back to courier with logged reason. |
 
+### Society & Unit Management (`/society`)
+
+| Endpoint | Method | Role | Description |
+|---|---|---|---|
+| `/society/units/search` | `GET` | Staff, Admin | Rapid typeahead lookup (<30s) matching unit, tower, or resident name. |
+| `/society/units/import` | `POST` | Society Admin | Bulk onboarding of units from CSV/delimited data with validation report. |
+| `/society/invites/:id/resend` | `POST` | Society Admin | Regenerate cryptographically secure invitation token and extend expiry. |
+
 ### Slots & Scheduling (`/slots`)
 
 | Endpoint | Method | Role | Description |
 |---|---|---|---|
 | `/slots/templates` | `GET` / `POST` | Society Admin | List or create society delivery time windows and capacity caps. |
+| `/slots/templates/:id` | `PATCH` | Society Admin | Update slot window timing, days, or capacity parameters. |
 | `/slots/available` | `GET` | Authenticated | List open slots for a date with real-time cutoff status. |
+| `/slots/instances/:id` | `PATCH` | Society Admin | Block slot date or override capacity (auto-cancels and notifies affected residents). |
 | `/slots/:parcelId/reschedule` | `POST` | Resident, Admin | Atomically swap an existing schedule into a new slot. |
 | `/slots/:parcelId/cancel` | `POST` | Resident, Admin | Cancel a scheduled delivery before the cutoff window. |
 
@@ -429,6 +439,30 @@ All endpoints require JWT Bearer authorization, except public `/health` and `/au
 | `/tasks/:id/verify-otp` | `POST` | Executive | Enter resident's 6-digit OTP to verify custody and complete delivery. |
 | `/tasks/:id/fail` | `POST` | Executive | Report delivery failure (not at home, refused) and return parcel to vault. |
 | `/tasks/:id/override` | `POST` | Admin, Reception | Staff override delivery with verified reason and recipient name. |
+
+### Devices & Preferences (`/devices`, `/notification-preferences`)
+
+| Endpoint | Method | Role | Description |
+|---|---|---|---|
+| `/devices` | `POST` | Authenticated | Register FCM / Web Push device token for live notifications. |
+| `/devices/:token` | `DELETE` | Authenticated | Unregister inactive device token. |
+| `/notification-preferences` | `GET` / `PATCH` | Authenticated | Query or toggle granular per-category alert preferences. |
+
+---
+
+## 📜 Version History
+
+ParcelTime follows [Semantic Versioning](https://semver.org/). For complete technical details, code changes, and synchronization protocols, see [`IMPLEMENTATIONS.md`](file:///d:/Projects/ParcelTime/IMPLEMENTATIONS.md).
+
+| Version | Release Date | Key Implementations & Highlights |
+|---|---|---|
+| **`v2.0.0`** | 2026-11-08 | **2030 Spatial Design System & AI Concierge:** Next.js 14 App Router with Pure Black (`#0D0101`) theme, animated gradient border chat box, 14 Bento Grid spatial cards (Conversation stats, AI model selector, active memory, recent chats, files, knowledge base, workspace, prompt library, settings), Document Viewer & PDF preview modal, Bulk CSV unit onboarding, rapid typeahead search, notification preferences & device push tokens, and 21 passing test suites. |
+| **`v1.5.0`** | 2026-11-07 | **Background Automation & Asynchronous Jobs:** `pg-boss` worker suite for unclaimed aging job, daily slot instance generation, delivery window reminders, and outbox push notification dispatcher. |
+| **`v1.4.0`** | 2026-11-06 | **Zero-Trust Handover Engine:** Cryptographic keyed SHA-256 OTP challenges (`hashOtp`), 15-minute validity, 5-attempt rate-limiting, and controlled staff overrides with photo proof. |
+| **`v1.3.0`** | 2026-11-05 | **Inbound Parcel Reception:** <30-second barcode intake, storage vault placement, QR token generation/resolution, and self-pickup counter request lifecycle. |
+| **`v1.2.0`** | 2026-11-04 | **Deterministic Slot Booking Engine:** Concurrency row-locking for capacity integrity, atomic rescheduling, 2-hour cutoff rule enforcement, and automated task generation. |
+| **`v1.1.0`** | 2026-11-03 | **Multi-Tenant Platform & 5-Tier RBAC:** Strict separation across Platform Admin, Society Admin, Reception, Executive, and Resident roles; rotating refresh tokens; append-only audit trail. |
+| **`v1.0.0-MVP`** | 2026-11-01 | **Foundation & State Machine:** Turborepo monorepo setup, 17 relational Prisma entities, 11-state parcel machine with 16 transitions, and Greenwood Palms demo seed data. |
 
 ---
 
