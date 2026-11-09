@@ -1,6 +1,6 @@
 # ParcelTime — Codebase Implementation Registry & Version History
 
-> **Document Version:** 2.0.3  
+> **Document Version:** 2.0.4  
 > **Last Synchronized:** 2026-11-09  
 > **Repository:** [DevRexxxx/ParcelTime](https://github.com/DevRexxxx/ParcelTime.git)  
 > **Compliance:** Technical Requirements Document (TRD), Product Requirements Document (PRD), System Design Rules, 2030 Spatial Design System, and UI Fix and Build Spec (v2).
@@ -25,7 +25,26 @@ This document serves as the **Single Source of Truth (SSoT)** for all architectu
 
 ## 📜 Complete Version History
 
-### [v2.0.3] — 2026-11-09 (Current Production Release)
+### [v2.0.4] — 2026-11-09 (Current Production Release)
+#### 📦 Monorepo Package Resolution & Runtime Packaging Hardening
+- **Resolved `@parceltime/shared` Node.js Runtime Resolution (`ERR_MODULE_NOT_FOUND`):** Fixed critical module resolution failure in Node 20+ runtime environments (Docker/Railway/Linux) where `apps/api` crashed on startup (`Cannot find module '/app/packages/shared/src/enums' imported from /app/packages/shared/src/index.ts`). Configured `packages/shared/package.json` to properly declare `"main": "dist/index.js"`, `"types": "dist/index.d.ts"`, and added Node ESM/CommonJS `exports` map:
+  ```json
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  }
+  ```
+- **Prebuilt Native Bindings Verification:** Verified `argon2@0.31.2` precompiled `napi-v3` binary loading for tamper-evident OTP hashing.
+- **CI Frozen Lockfile Parity:** Regenerated and verified `pnpm-lock.yaml` across all 4 workspace projects; ensured strict compatibility with `pnpm install --frozen-lockfile` in `.github/workflows/ci.yml`.
+- **Zero-Failure Verification:** Verified 4/4 typecheck packages pass (`tsc --noEmit`), 21/21 automated Vitest unit tests pass across 6 test suites, and Turborepo production build succeeds with optimized static prerendering.
+
+---
+
+### [v2.0.3] — 2026-11-09
 #### 🛡️ Spec v2 UI/UX Hardening & Zero-Trust Security Audit Alignment
 - **Security Rule C1 & C2 Enforced:** Purged insecure stored delegation memory (*"Delegate code to Guard Ramesh if unreachable"*) and converted `MemoryCard.tsx` to **Household Delivery Preferences**; eliminated plain text OTP code exposure in AI chat bubbles and history, replacing it with an interactive `OTP_ACTION` button linking to the secure delivery sheet.
 - **Delivery Code Safety Protocol:** Removed clipboard copy buttons from `OtpCard.tsx` to prevent forwarding codes to security guards; added explicit safety notice: *"Only tell this code to the person at your door."*
