@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { ParcelItem } from '@/lib/types';
 import { getStatusBadge } from '@/lib/utils';
+import { QrBadgeModal } from '@/components/modals/QrBadgeModal';
 
 interface ReceptionViewProps {
   parcels: ParcelItem[];
@@ -23,6 +24,7 @@ export const ReceptionView: React.FC<ReceptionViewProps> = ({
 }) => {
   const [search, setSearch] = useState('');
   const [filterCourier, setFilterCourier] = useState('ALL');
+  const [selectedBadgeParcel, setSelectedBadgeParcel] = useState<ParcelItem | null>(null);
 
   const filtered = parcels.filter((p) => {
     const matchesSearch =
@@ -138,7 +140,7 @@ export const ReceptionView: React.FC<ReceptionViewProps> = ({
                       <td className="py-3.5 px-4 text-right">
                         <div className="flex items-center justify-end gap-1.5">
                           <button
-                            onClick={() => alert(`Printing QR label for parcel ${parcel.parcelCode}...`)}
+                            onClick={() => setSelectedBadgeParcel(parcel)}
                             className="p-1.5 rounded-xl hover:bg-white/[0.08] text-white/60 hover:text-white transition-all"
                             title="Print QR Badge"
                           >
@@ -154,6 +156,13 @@ export const ReceptionView: React.FC<ReceptionViewProps> = ({
           </div>
         </div>
       </div>
+
+      {/* QR Badge Printing Modal */}
+      <QrBadgeModal
+        isOpen={!!selectedBadgeParcel}
+        parcel={selectedBadgeParcel}
+        onClose={() => setSelectedBadgeParcel(null)}
+      />
     </div>
   );
 };

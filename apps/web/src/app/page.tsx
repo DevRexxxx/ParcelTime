@@ -215,12 +215,20 @@ export default function HomePage() {
     ]);
   };
 
+  const handleRoleChange = (role: ActiveRole) => {
+    setActiveRole(role);
+    if (role === 'RESIDENT') setActiveView('resident');
+    else if (role === 'RECEPTION') setActiveView('reception');
+    else if (role === 'DELIVERY_EXECUTIVE') setActiveView('executive');
+    else if (role === 'SOCIETY_ADMIN') setActiveView('admin');
+  };
+
   return (
     <div className="flex flex-col min-h-screen">
       {/* Top Header */}
       <Header
         activeRole={activeRole}
-        setActiveRole={setActiveRole}
+        setActiveRole={handleRoleChange}
         onOpenSearch={() => setActiveView('chat')}
         voiceActive={voiceActive}
         setVoiceActive={setVoiceActive}
@@ -312,6 +320,7 @@ export default function HomePage() {
         isOpen={isRegisterOpen}
         onClose={() => setIsRegisterOpen(false)}
         onRegister={handleRegisterParcel}
+        existingParcels={parcels}
       />
 
       <ScheduleSlotModal

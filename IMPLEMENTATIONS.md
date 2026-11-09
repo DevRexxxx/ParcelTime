@@ -1,6 +1,6 @@
 # ParcelTime — Codebase Implementation Registry & Version History
 
-> **Document Version:** 2.0.1  
+> **Document Version:** 2.0.2  
 > **Last Synchronized:** 2026-11-09  
 > **Repository:** [DevRexxxx/ParcelTime](https://github.com/DevRexxxx/ParcelTime.git)  
 > **Compliance:** Technical Requirements Document (TRD), Product Requirements Document (PRD), System Design Rules, and 2030 Spatial Design System.
@@ -25,7 +25,19 @@ This document serves as the **Single Source of Truth (SSoT)** for all architectu
 
 ## 📜 Complete Version History
 
-### [v2.0.1] — 2026-11-09 (Current Production Release)
+### [v2.0.2] — 2026-11-09 (Current Production Release)
+#### 🚀 Spatial QR Label Engine, Barcode Laser Sentinel & Persona Orchestration
+- **Physical QR Label Badge Engine:** Built [`QrBadgeModal.tsx`](file:///d:/Projects/ParcelTime/apps/web/src/components/modals/QrBadgeModal.tsx) rendering authentic SVG QR matrix finder patterns, security custody tokens, vault shelf labels, and native `window.print()` triggers. Replaced legacy browser alerts in [`ReceptionView.tsx`](file:///d:/Projects/ParcelTime/apps/web/src/components/views/ReceptionView.tsx).
+- **Optical Barcode Laser Simulation:** Added realistic scanning beam animation and automated prefix recognition in [`RegisterParcelModal.tsx`](file:///d:/Projects/ParcelTime/apps/web/src/components/modals/RegisterParcelModal.tsx).
+- **Duplicate Tracking Sentinel:** Real-time validation preventing duplicate courier tracking numbers from being checked into society vaults.
+- **Society Directory Typeahead:** Smart unit search dynamically resolving Unit, Tower, and Resident name with 1-click auto-fill.
+- **Kiosk OTP Keypad & Auto-Fill:** Added touch-friendly spatial numeric keypad, rapid demo auto-fill, and attempt-limit error handling in [`VerifyOtpModal.tsx`](file:///d:/Projects/ParcelTime/apps/web/src/components/modals/VerifyOtpModal.tsx).
+- **Persona-to-View Auto-Routing:** Role switcher in [`Header.tsx`](file:///d:/Projects/ParcelTime/apps/web/src/components/layout/Header.tsx) now seamlessly auto-switches views between Resident, Reception, Executive, and Admin consoles.
+- **Zero-Warning Production Next.js Build:** Resolved ESLint browser globals configuration and pruned unused imports across 24 components.
+
+---
+
+### [v2.0.1] — 2026-11-09
 #### 🔧 CI Lockfile Synchronization & GitHub Actions Hardening
 - **Resolved Outdated Lockfile Error:** Synchronized `pnpm-lock.yaml` with root `package.json` devDependencies (`@typescript-eslint/parser` and `@typescript-eslint/eslint-plugin`), resolving the `ERR_PNPM_OUTDATED_LOCKFILE` CI pipeline failure.
 - **Workflow Hardening:** Updated `.github/workflows/ci.yml` with explicit `pnpm install --frozen-lockfile` to enforce strict dependency immutability across CI runner environments.

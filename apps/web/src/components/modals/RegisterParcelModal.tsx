@@ -1,19 +1,34 @@
 'use client';
 
 import React, { useState } from 'react';
-import { X, Package, QrCode, Check } from 'lucide-react';
+import { X, Package, QrCode, Check, AlertTriangle, Building, Loader2 } from 'lucide-react';
 import { ParcelItem } from '@/lib/types';
 
 interface RegisterParcelModalProps {
   isOpen: boolean;
   onClose: () => void;
   onRegister: (parcel: Partial<ParcelItem>) => void;
+  existingParcels?: ParcelItem[];
 }
+
+const SOCIETY_DIRECTORY = [
+  { unit: '101', tower: 'Tower A - Aspen', resident: 'Aarav Mehta' },
+  { unit: '102', tower: 'Tower A - Aspen', resident: 'Priya Sharma' },
+  { unit: '204', tower: 'Tower A - Aspen', resident: 'Kabir Verma' },
+  { unit: '402', tower: 'Tower A - Aspen', resident: 'Neha Kapoor' },
+  { unit: '301', tower: 'Tower B - Birch', resident: 'Rohan Gupta' },
+  { unit: '305', tower: 'Tower B - Birch', resident: 'Ananya Iyer' },
+  { unit: '502', tower: 'Tower B - Birch', resident: 'Vikram Malhotra' },
+  { unit: '202', tower: 'Tower C - Cedar', resident: 'Siddharth Rao' },
+  { unit: '401', tower: 'Tower C - Cedar', resident: 'Meera Nair' },
+  { unit: '603', tower: 'Tower C - Cedar', resident: 'Aditya Joshi' },
+];
 
 export const RegisterParcelModal: React.FC<RegisterParcelModalProps> = ({
   isOpen,
   onClose,
   onRegister,
+  existingParcels = [],
 }) => {
   if (!isOpen) return null;
 
@@ -24,6 +39,8 @@ export const RegisterParcelModal: React.FC<RegisterParcelModalProps> = ({
   const [recipientName, setRecipientName] = useState('Priya Sharma');
   const [storageLocation, setStorageLocation] = useState('Storage Vault - Shelf A');
   const [notes, setNotes] = useState('');
+  const [isScanning, setIsScanning] = useState(false);
+  const [showUnitSuggestions, setShowUnitSuggestions] = useState(false);
 
   const couriers = [
     'Amazon Logistics',
@@ -42,9 +59,43 @@ export const RegisterParcelModal: React.FC<RegisterParcelModalProps> = ({
     'Oversized Package Bay',
   ];
 
+  // Barcode Laser Scanner Simulation
   const handleBarcodeScan = () => {
-    const randomTrk = `TRK-${Math.floor(100000000 + Math.random() * 900000000)}`;
-    setTrackingNumber(randomTrk);
+    setIsScanning(true);
+    setTimeout(() => {
+      const prefix = courier.startsWith('Amazon')
+        ? 'TBA'
+        : courier.startsWith('Blue')
+        ? 'BD'
+        : courier.startsWith('Delhivery')
+        ? 'DEL'
+        : 'TRK';
+      const randomTrk = `${prefix}-${Math.floor(100000000 + Math.random() * 900000000)}`;
+      setTrackingNumber(randomTrk);
+      setIsScanning(false);
+    }, 650);
+  };
+
+  // Duplicate Tracking Check
+  const duplicateParcel = existingParcels.find(
+    (p) =>
+      trackingNumber.trim().length > 3 &&
+      p.trackingNumber.trim().toLowerCase() === trackingNumber.trim().toLowerCase()
+  );
+
+  // Filter unit suggestions
+  const unitSuggestions = SOCIETY_DIRECTORY.filter(
+    (item) =>
+      unitNumber.trim() &&
+      (item.unit.includes(unitNumber.trim()) ||
+        item.resident.toLowerCase().includes(unitNumber.trim().toLowerCase()))
+  );
+
+  const handleSelectUnit = (item: (typeof SOCIETY_DIRECTORY)[0]) => {
+    setUnitNumber(item.unit);
+    setTower(item.tower);
+    setRecipientName(item.resident);
+    setShowUnitSuggestions(false);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -88,6 +139,19 @@ export const RegisterParcelModal: React.FC<RegisterParcelModalProps> = ({
           </button>
         </div>
 
+        {/* Duplicate Tracking Number Warning */}
+        {duplicateParcel && (
+          <div className="p-3 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-start gap-2.5 text-amber-300 text-xs animate-in fade-in">
+            <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5 text-amber-400" />
+            <div>
+              <span className="font-semibold">Duplicate Tracking Number:</span> A parcel with code{' '}
+              <strong className="text-white">{duplicateParcel.parcelCode}</strong> is already stored in{' '}
+              <strong className="text-white">{duplicateParcel.storageLocation}</strong> for Unit{' '}
+              <strong className="text-white">{duplicateParcel.unitNumber}</strong>.
+            </div>
+          </div>
+        )}
+
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4 text-xs">
           {/* Courier & Barcode scan */}
@@ -113,24 +177,46 @@ export const RegisterParcelModal: React.FC<RegisterParcelModalProps> = ({
                 <button
                   type="button"
                   onClick={handleBarcodeScan}
-                  className="text-[10px] text-primary hover:underline flex items-center gap-1"
+                  disabled={isScanning}
+                  className="text-[10px] text-primary hover:underline flex items-center gap-1 transition-all"
                 >
-                  <QrCode className="w-3 h-3" />
-                  <span>Scan Barcode</span>
+                  {isScanning ? (
+                    <>
+                      <Loader2 className="w-3 h-3 animate-spin text-primary" />
+                      <span>Reading Optical...</span>
+                    </>
+                  ) : (
+                    <>
+                      <QrCode className="w-3 h-3" />
+                      <span>Scan Barcode</span>
+                    </>
+                  )}
                 </button>
               </div>
-              <input
-                type="text"
-                placeholder="e.g. AZ-91823091"
-                value={trackingNumber}
-                onChange={(e) => setTrackingNumber(e.target.value)}
-                className="w-full px-3.5 py-2.5 rounded-2xl bg-white/[0.04] border border-white/10 text-white outline-none focus:border-primary/50"
-              />
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="e.g. AZ-91823091"
+                  value={trackingNumber}
+                  onChange={(e) => setTrackingNumber(e.target.value)}
+                  className={`w-full px-3.5 py-2.5 rounded-2xl bg-white/[0.04] border ${
+                    duplicateParcel
+                      ? 'border-amber-500/60 focus:border-amber-400'
+                      : 'border-white/10 focus:border-primary/50'
+                  } text-white outline-none transition-all`}
+                />
+                {/* Simulated Optical Laser Beam */}
+                {isScanning && (
+                  <div className="absolute inset-0 rounded-2xl overflow-hidden pointer-events-none">
+                    <div className="w-full h-1 bg-red-500 shadow-[0_0_12px_#ff0055] animate-bounce" />
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
-          {/* Tower & Unit */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {/* Tower & Unit with Real-Time Typeahead */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 relative">
             <div className="space-y-1.5">
               <label className="text-white/60 font-medium">Tower</label>
               <select
@@ -144,22 +230,51 @@ export const RegisterParcelModal: React.FC<RegisterParcelModalProps> = ({
               </select>
             </div>
 
-            <div className="space-y-1.5">
-              <label className="text-white/60 font-medium">Unit Number</label>
+            <div className="space-y-1.5 relative">
+              <div className="flex justify-between items-center">
+                <label className="text-white/60 font-medium">Unit Number</label>
+                <span className="text-[10px] text-white/30">Auto-suggest active</span>
+              </div>
               <input
                 type="text"
                 placeholder="102"
                 value={unitNumber}
-                onChange={(e) => setUnitNumber(e.target.value)}
+                onFocus={() => setShowUnitSuggestions(true)}
+                onChange={(e) => {
+                  setUnitNumber(e.target.value);
+                  setShowUnitSuggestions(true);
+                }}
                 className="w-full px-3.5 py-2.5 rounded-2xl bg-white/[0.04] border border-white/10 text-white outline-none focus:border-primary/50"
               />
+
+              {/* Suggestions Flyout */}
+              {showUnitSuggestions && unitSuggestions.length > 0 && (
+                <div className="absolute top-full left-0 right-0 mt-1 z-30 p-2 rounded-2xl bg-[#140b0b]/95 border border-white/15 backdrop-blur-xl shadow-2xl space-y-1 max-h-40 overflow-y-auto">
+                  <div className="text-[10px] text-white/40 px-2 py-0.5 font-medium flex items-center gap-1">
+                    <Building className="w-3 h-3 text-primary" />
+                    <span>Society Directory Matches</span>
+                  </div>
+                  {unitSuggestions.map((item) => (
+                    <button
+                      key={`${item.tower}-${item.unit}`}
+                      type="button"
+                      onClick={() => handleSelectUnit(item)}
+                      className="w-full text-left px-2.5 py-1.5 rounded-xl hover:bg-white/[0.08] text-white flex items-center justify-between transition-all"
+                    >
+                      <span className="font-semibold text-primary">Unit {item.unit}</span>
+                      <span className="text-white/60 text-[11px]">{item.resident}</span>
+                      <span className="text-white/30 text-[10px]">{item.tower.split('-')[0].trim()}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 
           {/* Recipient & Storage Location */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <label className="text-white/60 font-medium">Recipient Name (Optional)</label>
+              <label className="text-white/60 font-medium">Recipient Name</label>
               <input
                 type="text"
                 placeholder="Priya Sharma"
@@ -219,4 +334,3 @@ export const RegisterParcelModal: React.FC<RegisterParcelModalProps> = ({
     </div>
   );
 };
-
