@@ -1,12 +1,12 @@
 import { PrismaClient, UserRole, ParcelStatus, SlotInstanceStatus, TaskStatus, DeliveryScheduleStatus } from '@prisma/client';
-import argon2 from 'argon2';
+import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 import dayjs from 'dayjs';
 
 const prisma = new PrismaClient();
 
 async function hashPassword(plain: string) {
-  return await argon2.hash(plain);
+  return await bcrypt.hash(plain, 10);
 }
 
 function hashOtp(parcelId: string, otp: string): string {

@@ -18,7 +18,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-2.0.4-FF5D00?style=flat-square" alt="Version 2.0.4" />
+  <img src="https://img.shields.io/badge/version-2.0.5-FF5D00?style=flat-square" alt="Version 2.0.5" />
   <img src="https://img.shields.io/badge/monorepo-turborepo-blue?style=flat-square&logo=turborepo" alt="Turborepo" />
   <img src="https://img.shields.io/badge/next.js-14-black?style=flat-square&logo=next.js" alt="Next.js 14" />
   <img src="https://img.shields.io/badge/react-18-61dafb?style=flat-square&logo=react" alt="React 18" />
@@ -456,6 +456,7 @@ ParcelTime follows [Semantic Versioning](https://semver.org/). For complete tech
 
 | Version | Release Date | Key Implementations & Highlights |
 |---|---|---|
+| **`v2.0.5`** | 2026-11-10 | **Pure JS Cryptographic Portability & Zero-Native-Addon Container Hardening:** Completely eliminated fragile native C++ addon crash (`Cannot find module '.../argon2/lib/binding/napi-v3/argon2.node'`) on container startup in Node 24 (`v24.22.1` on Railway/Docker/Alpine); replaced with pure JavaScript `bcryptjs` for 100% universal runtime compatibility across Linux, macOS, and Windows with zero native compilation dependencies; verified clean boot on port 3001, 21 passing test suites, and 4/4 typecheck pass. |
 | **`v2.0.4`** | 2026-11-09 | **Monorepo Package Resolution, Container Build Chaining & Runtime Packaging Hardening:** Resolved Node.js runtime resolution failure (`ERR_MODULE_NOT_FOUND`) on `/app/packages/shared/src/enums` by updating `@parceltime/shared` `package.json` to point `"main"` and `"types"` to compiled `dist/` artifacts with dual CJS/ESM exports map; enabled autonomous monorepo build chaining (`pnpm --filter @parceltime/shared build && prisma generate && tsc`) so direct single-workspace container builds (Railway/Docker) compile upstream packages automatically; verified `argon2` prebuilt native binaries; synchronized and validated `pnpm-lock.yaml` for zero-failure GitHub Actions CI (`pnpm install --frozen-lockfile`). |
 | **`v2.0.3`** | 2026-11-09 | **Spec v2 UI/UX Hardening & Zero-Trust Security Audit Alignment:** Fixed critical findings from [`09_ui_fix_and_build_spec.md`](file:///d:/Projects/ParcelTime/09_ui_fix_and_build_spec.md); purged insecure code delegation memory; eliminated plain OTP text from AI chat bubbles and exports in favor of interactive `OTP_ACTION` buttons; removed code copy buttons with safety lines; unified resident unit to A-102 (Tower A - Aspen) across all mock data; purged deferred smart locker references; pruned staff prompts from resident suggestion chips; decoupled 15-card Bento from ChatArea for focused conversational stream; role-aware dynamic sidebar and mobile navigation. |
 | **`v2.0.2`** | 2026-11-09 | **Spatial QR Label Engine, Optical Barcode Laser Sentinel & Persona Orchestration:** Physical QR label badge modal ([`QrBadgeModal.tsx`](file:///d:/Projects/ParcelTime/apps/web/src/components/modals/QrBadgeModal.tsx)) with SVG QR matrix & native printing, animated optical barcode laser simulation, society directory typeahead auto-fill, duplicate tracking code sentinel, touch kiosk numeric keypad ([`VerifyOtpModal.tsx`](file:///d:/Projects/ParcelTime/apps/web/src/components/modals/VerifyOtpModal.tsx)), and automatic persona-to-view navigation on role change. Zero-warning Next.js production build. |

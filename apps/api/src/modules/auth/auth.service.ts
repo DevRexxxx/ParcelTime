@@ -1,7 +1,7 @@
 import { prisma } from '../../lib/prisma';
 import { Errors } from '../../lib/errors';
 import { env } from '../../config/env';
-import argon2 from 'argon2';
+import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import { v4 as uuidv4 } from 'uuid';
@@ -31,7 +31,7 @@ export function generateTokens(userId: string, societyId: string, roles: UserRol
 }
 
 export async function hashPassword(password: string): Promise<string> {
-  return argon2.hash(password, { type: argon2.argon2id });
+  return bcrypt.hash(password, 10);
 }
 
 export async function loginUser(
@@ -57,7 +57,7 @@ export async function loginUser(
 
   if (!user) throw Errors.UNAUTHENTICATED();
 
-  const valid = await argon2.verify(user.passwordHash, password);
+  const valid = await bcrypt.compare(password, user.passwordHash);
   if (!valid) throw Errors.UNAUTHENTICATED();
 
   // Update last login
