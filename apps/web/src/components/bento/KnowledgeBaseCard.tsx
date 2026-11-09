@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { BookOpen, Search, HelpCircle, ChevronRight } from 'lucide-react';
+import { BookOpen, HelpCircle, ChevronRight } from 'lucide-react';
 
 export const KnowledgeBaseCard: React.FC = () => {
   const articles = [

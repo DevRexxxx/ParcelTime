@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Truck, Navigation, Clock, ShieldCheck, ArrowRight } from 'lucide-react';
+import { Truck, Navigation, ShieldCheck, ArrowRight } from 'lucide-react';
 import { ParcelItem } from '@/lib/types';
 
 interface ActiveDeliveryCardProps {

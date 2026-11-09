@@ -5,13 +5,10 @@ import {
   Bell,
   Search,
   Sparkles,
-  Shield,
-  User,
   ChevronDown,
   Building,
   CheckCircle2,
   Mic,
-  SlidersHorizontal,
 } from 'lucide-react';
 import { ActiveRole } from '@/lib/types';
 

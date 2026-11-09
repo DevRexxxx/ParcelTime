@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Mic, MicOff, Volume2, Sparkles } from 'lucide-react';
+import { Mic, MicOff, Sparkles } from 'lucide-react';
 
 interface VoiceCardProps {
   isActive: boolean;

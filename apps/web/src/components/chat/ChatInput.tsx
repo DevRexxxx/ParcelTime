@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import { Paperclip, Mic, ArrowUp, Sparkles, X, Image as ImageIcon } from 'lucide-react';
 
 interface ChatInputProps {

@@ -5,13 +5,7 @@ import {
   Inbox,
   Plus,
   Search,
-  Package,
   QrCode,
-  HardDrive,
-  ArrowRight,
-  Truck,
-  RotateCcw,
-  CheckCircle2,
 } from 'lucide-react';
 import { ParcelItem } from '@/lib/types';
 import { getStatusBadge } from '@/lib/utils';
@@ -25,7 +19,7 @@ interface ReceptionViewProps {
 export const ReceptionView: React.FC<ReceptionViewProps> = ({
   parcels,
   onOpenRegister,
-  onMoveStorage,
+  onMoveStorage: _onMoveStorage,
 }) => {
   const [search, setSearch] = useState('');
   const [filterCourier, setFilterCourier] = useState('ALL');

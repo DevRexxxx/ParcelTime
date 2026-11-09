@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Brain, CheckCircle, Plus, Trash2 } from 'lucide-react';
+import { Brain, CheckCircle, Trash2 } from 'lucide-react';
 
 export const MemoryCard: React.FC = () => {
   const [memories, setMemories] = useState([

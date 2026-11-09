@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Box, Layers, HardDrive } from 'lucide-react';
+import { HardDrive } from 'lucide-react';
 
 export const StorageCard: React.FC = () => {
   const vaults = [

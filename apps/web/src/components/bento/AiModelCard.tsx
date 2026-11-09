@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Sparkles, Check, ChevronDown, Bot, Layers } from 'lucide-react';
+import { Sparkles, Check, ChevronDown, Bot } from 'lucide-react';
 
 interface AiModelCardProps {
   selectedModel?: string;

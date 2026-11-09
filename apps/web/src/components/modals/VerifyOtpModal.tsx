@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { X, ShieldCheck, Check, AlertTriangle, KeyRound } from 'lucide-react';
+import { X, Check, AlertTriangle, KeyRound } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { ParcelItem } from '@/lib/types';
 

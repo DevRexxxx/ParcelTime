@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Activity, Cpu, Zap, Radio } from 'lucide-react';
+import { Cpu, Zap, Radio } from 'lucide-react';
 
 export const ConversationStatsCard: React.FC = () => {
   return (

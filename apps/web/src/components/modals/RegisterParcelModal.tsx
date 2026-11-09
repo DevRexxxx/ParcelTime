@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { X, Package, QrCode, Camera, Check, Sparkles } from 'lucide-react';
+import { X, Package, QrCode, Check } from 'lucide-react';
 import { ParcelItem } from '@/lib/types';
 
 interface RegisterParcelModalProps {

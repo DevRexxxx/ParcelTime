@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { X, Calendar, Clock, Check, Sparkles, Shield } from 'lucide-react';
+import { X, Calendar, Clock, Check } from 'lucide-react';
 import { ParcelItem, SlotItem } from '@/lib/types';
 
 interface ScheduleSlotModalProps {

@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { FileText, Eye, Download, Image as ImageIcon } from 'lucide-react';
+import { FileText, Eye, Image as ImageIcon } from 'lucide-react';
 
 interface FilesCardProps {
   onOpenFilePreview?: (file: { name: string; type: string; size: string; url: string }) => void;

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Sliders, Sun, Moon, Volume2, Bell } from 'lucide-react';
+import { Sliders, Volume2, Bell } from 'lucide-react';
 
 export const SettingsCard: React.FC = () => {
   const [ambientGlow, setAmbientGlow] = useState(true);

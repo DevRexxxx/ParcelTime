@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { X, Download, FileText, ZoomIn, ZoomOut, CheckCircle, ShieldCheck } from 'lucide-react';
+import { X, FileText, ZoomIn, ZoomOut, ShieldCheck } from 'lucide-react';
 
 interface DocumentViewerModalProps {
   isOpen: boolean;

@@ -6,11 +6,6 @@ import {
   Clock,
   ShieldCheck,
   Zap,
-  Sparkles,
-  LayoutGrid,
-  Bot,
-  Brain,
-  Sliders,
   ChevronRight,
 } from 'lucide-react';
 import { StatCard } from './StatCard';

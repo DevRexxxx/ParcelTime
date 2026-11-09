@@ -4,11 +4,8 @@ import React, { useState } from 'react';
 import {
   Package,
   Calendar,
-  Clock,
   ShieldCheck,
   Search,
-  Filter,
-  ArrowRight,
   Sparkles,
   CheckCircle2,
 } from 'lucide-react';

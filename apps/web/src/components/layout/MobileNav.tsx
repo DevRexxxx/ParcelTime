@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Sparkles, LayoutGrid, Package, Inbox, Truck, ShieldCheck } from 'lucide-react';
+import { Sparkles, LayoutGrid, Package, Inbox, Truck } from 'lucide-react';
 
 interface MobileNavProps {
   activeView: string;

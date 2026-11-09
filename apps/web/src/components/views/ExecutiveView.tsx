@@ -1,9 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Truck, CheckCircle2, QrCode, ShieldCheck, XCircle, ArrowRight, Clock, AlertTriangle } from 'lucide-react';
+import { Truck, QrCode, ShieldCheck, ArrowRight } from 'lucide-react';
 import { ParcelItem } from '@/lib/types';
-import { getStatusBadge } from '@/lib/utils';
 
 interface ExecutiveViewProps {
   parcels: ParcelItem[];

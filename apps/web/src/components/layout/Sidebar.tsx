@@ -9,13 +9,10 @@ import {
   Truck,
   ShieldCheck,
   History,
-  Bookmark,
   ChevronLeft,
   ChevronRight,
   Plus,
   Box,
-  Settings,
-  HelpCircle,
 } from 'lucide-react';
 import { ActiveRole } from '@/lib/types';
 
@@ -33,7 +30,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   setActiveView,
   collapsed,
   setCollapsed,
-  activeRole,
+  activeRole: _activeRole,
   onNewChat,
 }) => {
   const navItems = [
