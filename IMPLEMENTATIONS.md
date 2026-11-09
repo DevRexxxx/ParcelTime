@@ -38,6 +38,7 @@ This document serves as the **Single Source of Truth (SSoT)** for all architectu
     }
   }
   ```
+- **Autonomous Monorepo Build Chaining:** Resolved compilation failure when Railway or Docker builds single workspaces directly (`pnpm --filter @parceltime/api build` failing with `TS2307: Cannot find module '@parceltime/shared'`). Updated `apps/api/package.json` and `apps/web/package.json` build scripts to explicitly compile upstream dependencies (`"build": "pnpm --filter @parceltime/shared build && prisma generate && tsc"`) before invoking `tsc`/`next build`.
 - **Prebuilt Native Bindings Verification:** Verified `argon2@0.31.2` precompiled `napi-v3` binary loading for tamper-evident OTP hashing.
 - **CI Frozen Lockfile Parity:** Regenerated and verified `pnpm-lock.yaml` across all 4 workspace projects; ensured strict compatibility with `pnpm install --frozen-lockfile` in `.github/workflows/ci.yml`.
 - **Zero-Failure Verification:** Verified 4/4 typecheck packages pass (`tsc --noEmit`), 21/21 automated Vitest unit tests pass across 6 test suites, and Turborepo production build succeeds with optimized static prerendering.
