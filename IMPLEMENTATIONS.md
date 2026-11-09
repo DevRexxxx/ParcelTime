@@ -1,7 +1,7 @@
 # ParcelTime — Codebase Implementation Registry & Version History
 
-> **Document Version:** 2.0.0  
-> **Last Synchronized:** 2026-11-08  
+> **Document Version:** 2.0.1  
+> **Last Synchronized:** 2026-11-09  
 > **Repository:** [DevRexxxx/ParcelTime](https://github.com/DevRexxxx/ParcelTime.git)  
 > **Compliance:** Technical Requirements Document (TRD), Product Requirements Document (PRD), System Design Rules, and 2030 Spatial Design System.
 
@@ -25,7 +25,14 @@ This document serves as the **Single Source of Truth (SSoT)** for all architectu
 
 ## 📜 Complete Version History
 
-### [v2.0.0] — 2026-11-08 (Current Production Release)
+### [v2.0.1] — 2026-11-09 (Current Production Release)
+#### 🔧 CI Lockfile Synchronization & GitHub Actions Hardening
+- **Resolved Outdated Lockfile Error:** Synchronized `pnpm-lock.yaml` with root `package.json` devDependencies (`@typescript-eslint/parser` and `@typescript-eslint/eslint-plugin`), resolving the `ERR_PNPM_OUTDATED_LOCKFILE` CI pipeline failure.
+- **Workflow Hardening:** Updated `.github/workflows/ci.yml` with explicit `pnpm install --frozen-lockfile` to enforce strict dependency immutability across CI runner environments.
+
+---
+
+### [v2.0.0] — 2026-11-08
 #### 🌟 2030 Spatial Design System, Full Background Jobs, & Estate Governance Suite
 - **Spatial UI & Bento Grid:** Built complete Apple VisionOS-inspired Spatial Design System in Next.js 14 App Router with pure black theme (`#0D0101`), subtle 6–8% grid texture, ambient neon glows (Orange `#FF5D00`, Purple, Blue), 24–32px rounded glass cards, and continuous rotating gradient border strokes.
 - **14 Bento Grid Cards:**

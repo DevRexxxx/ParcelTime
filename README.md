@@ -18,7 +18,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-2.0.0-FF5D00?style=flat-square" alt="Version 2.0.0" />
+  <img src="https://img.shields.io/badge/version-2.0.1-FF5D00?style=flat-square" alt="Version 2.0.1" />
   <img src="https://img.shields.io/badge/monorepo-turborepo-blue?style=flat-square&logo=turborepo" alt="Turborepo" />
   <img src="https://img.shields.io/badge/next.js-14-black?style=flat-square&logo=next.js" alt="Next.js 14" />
   <img src="https://img.shields.io/badge/react-18-61dafb?style=flat-square&logo=react" alt="React 18" />
@@ -456,6 +456,7 @@ ParcelTime follows [Semantic Versioning](https://semver.org/). For complete tech
 
 | Version | Release Date | Key Implementations & Highlights |
 |---|---|---|
+| **`v2.0.1`** | 2026-11-09 | **CI Lockfile Synchronization & Workflow Hardening:** Synchronized `pnpm-lock.yaml` with root `devDependencies` (`@typescript-eslint/parser`, `@typescript-eslint/eslint-plugin`) and enforced `pnpm install --frozen-lockfile` in GitHub Actions CI pipeline. |
 | **`v2.0.0`** | 2026-11-08 | **2030 Spatial Design System & AI Concierge:** Next.js 14 App Router with Pure Black (`#0D0101`) theme, animated gradient border chat box, 14 Bento Grid spatial cards (Conversation stats, AI model selector, active memory, recent chats, files, knowledge base, workspace, prompt library, settings), Document Viewer & PDF preview modal, Bulk CSV unit onboarding, rapid typeahead search, notification preferences & device push tokens, and 21 passing test suites. |
 | **`v1.5.0`** | 2026-11-07 | **Background Automation & Asynchronous Jobs:** `pg-boss` worker suite for unclaimed aging job, daily slot instance generation, delivery window reminders, and outbox push notification dispatcher. |
 | **`v1.4.0`** | 2026-11-06 | **Zero-Trust Handover Engine:** Cryptographic keyed SHA-256 OTP challenges (`hashOtp`), 15-minute validity, 5-attempt rate-limiting, and controlled staff overrides with photo proof. |
