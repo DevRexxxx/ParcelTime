@@ -1,21 +1,51 @@
 'use client';
 
 import React from 'react';
-import { Sparkles, LayoutGrid, Package, Inbox, Truck } from 'lucide-react';
+import { Sparkles, LayoutGrid, Package, Inbox, Truck, ShieldCheck } from 'lucide-react';
+import { ActiveRole } from '@/lib/types';
 
 interface MobileNavProps {
   activeView: string;
   setActiveView: (view: string) => void;
+  activeRole?: ActiveRole;
 }
 
-export const MobileNav: React.FC<MobileNavProps> = ({ activeView, setActiveView }) => {
-  const tabs = [
-    { id: 'chat', label: 'AI Concierge', icon: Sparkles },
-    { id: 'bento', label: 'Bento', icon: LayoutGrid },
-    { id: 'resident', label: 'Parcels', icon: Package },
-    { id: 'reception', label: 'Desk', icon: Inbox },
-    { id: 'executive', label: 'Deliver', icon: Truck },
-  ];
+export const MobileNav: React.FC<MobileNavProps> = ({
+  activeView,
+  setActiveView,
+  activeRole = 'RESIDENT',
+}) => {
+  const getTabs = () => {
+    switch (activeRole) {
+      case 'RESIDENT':
+        return [
+          { id: 'resident', label: 'Home', icon: Package },
+          { id: 'bento', label: 'Bento', icon: LayoutGrid },
+          { id: 'chat', label: 'Concierge', icon: Sparkles },
+        ];
+      case 'RECEPTION':
+        return [
+          { id: 'reception', label: 'Desk', icon: Inbox },
+          { id: 'bento', label: 'Bento', icon: LayoutGrid },
+          { id: 'chat', label: 'Concierge', icon: Sparkles },
+        ];
+      case 'DELIVERY_EXECUTIVE':
+        return [
+          { id: 'executive', label: 'Route', icon: Truck },
+          { id: 'bento', label: 'Bento', icon: LayoutGrid },
+        ];
+      case 'SOCIETY_ADMIN':
+      default:
+        return [
+          { id: 'admin', label: 'Admin', icon: ShieldCheck },
+          { id: 'reception', label: 'Desk', icon: Inbox },
+          { id: 'bento', label: 'Bento', icon: LayoutGrid },
+          { id: 'chat', label: 'Concierge', icon: Sparkles },
+        ];
+    }
+  };
+
+  const tabs = getTabs();
 
   return (
     <nav className="fixed bottom-4 left-4 right-4 z-50 md:hidden">
@@ -42,4 +72,3 @@ export const MobileNav: React.FC<MobileNavProps> = ({ activeView, setActiveView 
     </nav>
   );
 };
-

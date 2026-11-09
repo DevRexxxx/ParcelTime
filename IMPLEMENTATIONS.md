@@ -1,9 +1,9 @@
 # ParcelTime — Codebase Implementation Registry & Version History
 
-> **Document Version:** 2.0.2  
+> **Document Version:** 2.0.3  
 > **Last Synchronized:** 2026-11-09  
 > **Repository:** [DevRexxxx/ParcelTime](https://github.com/DevRexxxx/ParcelTime.git)  
-> **Compliance:** Technical Requirements Document (TRD), Product Requirements Document (PRD), System Design Rules, and 2030 Spatial Design System.
+> **Compliance:** Technical Requirements Document (TRD), Product Requirements Document (PRD), System Design Rules, 2030 Spatial Design System, and UI Fix and Build Spec (v2).
 
 ---
 
@@ -25,7 +25,19 @@ This document serves as the **Single Source of Truth (SSoT)** for all architectu
 
 ## 📜 Complete Version History
 
-### [v2.0.2] — 2026-11-09 (Current Production Release)
+### [v2.0.3] — 2026-11-09 (Current Production Release)
+#### 🛡️ Spec v2 UI/UX Hardening & Zero-Trust Security Audit Alignment
+- **Security Rule C1 & C2 Enforced:** Purged insecure stored delegation memory (*"Delegate code to Guard Ramesh if unreachable"*) and converted `MemoryCard.tsx` to **Household Delivery Preferences**; eliminated plain text OTP code exposure in AI chat bubbles and history, replacing it with an interactive `OTP_ACTION` button linking to the secure delivery sheet.
+- **Delivery Code Safety Protocol:** Removed clipboard copy buttons from `OtpCard.tsx` to prevent forwarding codes to security guards; added explicit safety notice: *"Only tell this code to the person at your door."*
+- **Data & Location Consistency (C3 & C4):** Unified resident unit across all screens as **Unit A-102 (Tower A - Aspen, Greenwood Palms)**; removed all deferred "Smart Locker Bay 1" references from data models, cards, and views.
+- **Role Scoping & Prompt Pruning (C5 & C6):** Removed staff/admin queries ("Check remaining rack vacancy", "Generate one-time gate OTP for courier") from resident prompt suggestions; updated input placeholder to *"Ask about your parcels or bookings..."*.
+- **Information Architecture Decoupling (H7 & Section 3):** Detached the 15-card `BentoGrid` from `ChatArea.tsx` so the AI Concierge operates as a focused, first-class conversation and scheduling stream rather than an endless scroll.
+- **Dynamic Role Navigation:** Sidebar and mobile navigation dynamically filter routes and primary actions according to active role permissions (`RESIDENT`, `RECEPTION`, `DELIVERY_EXECUTIVE`, `SOCIETY_ADMIN`).
+- **Copy Deck Alignment:** Applied standardized status vocabulary (*"Waiting at the gate"*, *"Scheduled"*, *"On its way"*, *"Delivered"*) across Bento cards and Resident Portal.
+
+---
+
+### [v2.0.2] — 2026-11-09
 #### 🚀 Spatial QR Label Engine, Barcode Laser Sentinel & Persona Orchestration
 - **Physical QR Label Badge Engine:** Built [`QrBadgeModal.tsx`](file:///d:/Projects/ParcelTime/apps/web/src/components/modals/QrBadgeModal.tsx) rendering authentic SVG QR matrix finder patterns, security custody tokens, vault shelf labels, and native `window.print()` triggers. Replaced legacy browser alerts in [`ReceptionView.tsx`](file:///d:/Projects/ParcelTime/apps/web/src/components/views/ReceptionView.tsx).
 - **Optical Barcode Laser Simulation:** Added realistic scanning beam animation and automated prefix recognition in [`RegisterParcelModal.tsx`](file:///d:/Projects/ParcelTime/apps/web/src/components/modals/RegisterParcelModal.tsx).

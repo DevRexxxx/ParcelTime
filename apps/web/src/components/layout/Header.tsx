@@ -59,45 +59,47 @@ export const Header: React.FC<HeaderProps> = ({
             <span className="text-white/40 hidden md:inline">• IST</span>
           </div>
 
-          {/* AI Model Selector Button */}
-          <div className="relative hidden lg:block">
-            <button
-              onClick={() => setModelDropdownOpen(!modelDropdownOpen)}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/[0.03] hover:bg-white/[0.08] border border-white/[0.08] text-xs transition-all text-white/90"
-            >
-              <Sparkles className="w-3.5 h-3.5 text-[#FF5D00]" />
-              <span className="font-medium">{selectedModel}</span>
-              <ChevronDown className="w-3 h-3 text-white/50" />
-            </button>
+          {/* AI Model Selector Button (Admin & Staff Diagnostics only, hidden for Residents per Spec 2 & H1) */}
+          {activeRole !== 'RESIDENT' && (
+            <div className="relative hidden lg:block">
+              <button
+                onClick={() => setModelDropdownOpen(!modelDropdownOpen)}
+                className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/[0.03] hover:bg-white/[0.08] border border-white/[0.08] text-xs transition-all text-white/90"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-[#FF5D00]" />
+                <span className="font-medium">{selectedModel}</span>
+                <ChevronDown className="w-3 h-3 text-white/50" />
+              </button>
 
-            {modelDropdownOpen && (
-              <div className="absolute left-0 mt-2 w-72 p-2 rounded-2xl glass-panel-elevated shadow-glass-lg border border-white/10 z-50 animate-in fade-in zoom-in-95">
-                <div className="text-[11px] font-semibold text-white/40 uppercase tracking-wider px-2.5 py-1">
-                  AI Operations Engine
+              {modelDropdownOpen && (
+                <div className="absolute left-0 mt-2 w-72 p-2 rounded-2xl glass-panel-elevated shadow-glass-lg border border-white/10 z-50 animate-in fade-in zoom-in-95">
+                  <div className="text-[11px] font-semibold text-white/40 uppercase tracking-wider px-2.5 py-1">
+                    AI Operations Engine
+                  </div>
+                  {models.map((m) => (
+                    <button
+                      key={m.name}
+                      onClick={() => {
+                        setSelectedModel(m.name);
+                        setModelDropdownOpen(false);
+                      }}
+                      className={`w-full text-left p-2.5 rounded-xl transition-all flex flex-col gap-0.5 ${
+                        selectedModel === m.name
+                          ? 'bg-primary/15 border border-primary/30 text-white'
+                          : 'hover:bg-white/[0.05] text-white/80'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between text-xs font-semibold">
+                        <span>{m.name}</span>
+                        {selectedModel === m.name && <CheckCircle2 className="w-3.5 h-3.5 text-primary" />}
+                      </div>
+                      <span className="text-[11px] text-white/50">{m.desc}</span>
+                    </button>
+                  ))}
                 </div>
-                {models.map((m) => (
-                  <button
-                    key={m.name}
-                    onClick={() => {
-                      setSelectedModel(m.name);
-                      setModelDropdownOpen(false);
-                    }}
-                    className={`w-full text-left p-2.5 rounded-xl transition-all flex flex-col gap-0.5 ${
-                      selectedModel === m.name
-                        ? 'bg-primary/15 border border-primary/30 text-white'
-                        : 'hover:bg-white/[0.05] text-white/80'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between text-xs font-semibold">
-                      <span>{m.name}</span>
-                      {selectedModel === m.name && <CheckCircle2 className="w-3.5 h-3.5 text-primary" />}
-                    </div>
-                    <span className="text-[11px] text-white/50">{m.desc}</span>
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Center: Raycast / Command style search */}

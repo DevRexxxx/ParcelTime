@@ -170,13 +170,21 @@ export const ResidentView: React.FC<ResidentViewProps> = ({
 
                     <div className="flex items-center gap-2">
                       {parcel.status === 'RECEIVED' && (
-                        <button
-                          onClick={() => onOpenSchedule(parcel)}
-                          className="px-3.5 py-1.5 rounded-xl bg-primary hover:bg-primary-hover text-white text-xs font-semibold shadow-glow-orange flex items-center gap-1 transition-all"
-                        >
-                          <Calendar className="w-3.5 h-3.5" />
-                          <span>Schedule Slot</span>
-                        </button>
+                        <div className="flex items-center gap-1.5">
+                          <button
+                            onClick={() => onOpenSchedule(parcel)}
+                            className="px-3.5 py-1.5 rounded-xl bg-primary hover:bg-primary-hover text-white text-xs font-semibold shadow-glow-orange flex items-center gap-1 transition-all"
+                          >
+                            <Calendar className="w-3.5 h-3.5" />
+                            <span>Schedule Slot</span>
+                          </button>
+                          <button
+                            onClick={() => alert(`Self-pickup request registered for ${parcel.parcelCode}. Reception Gate 1 has been notified.`)}
+                            className="px-3 py-1.5 rounded-xl bg-white/[0.05] hover:bg-white/[0.1] text-white/70 hover:text-white text-xs font-medium border border-white/[0.08] transition-all"
+                          >
+                            <span>Pick Up at Gate</span>
+                          </button>
+                        </div>
                       )}
 
                       {parcel.status === 'OUT_FOR_DELIVERY' && (
@@ -185,7 +193,7 @@ export const ResidentView: React.FC<ResidentViewProps> = ({
                           className="px-3.5 py-1.5 rounded-xl bg-orange-500/20 hover:bg-orange-500/30 text-orange-400 border border-orange-500/40 text-xs font-semibold flex items-center gap-1 animate-pulse transition-all"
                         >
                           <ShieldCheck className="w-3.5 h-3.5" />
-                          <span>View OTP Code</span>
+                          <span>Show Delivery Code</span>
                         </button>
                       )}
 

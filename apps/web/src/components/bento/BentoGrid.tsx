@@ -59,25 +59,25 @@ export const BentoGrid: React.FC<BentoGridProps> = ({
 
   return (
     <div className="w-full space-y-4">
-      {/* Top Banner & Quick stats row */}
+      {/* Top Banner & Quick stats row (Spec Section 2 & 7.5 Status Vocabulary) */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <StatCard
-          title="In Storage Vault"
+          title="Waiting at the Gate"
           value={inStorage}
-          subtext="Eligible for scheduled delivery"
+          subtext="Ready to schedule or pickup"
           icon={Package}
-          trend="+2 today"
+          trend="+1 today"
           glowColor="orange"
         />
         <StatCard
-          title="Scheduled Slots"
+          title="Scheduled"
           value={scheduled}
-          subtext="Confirmed with residents"
+          subtext="Confirmed delivery windows"
           icon={Clock}
           glowColor="blue"
         />
         <StatCard
-          title="Out For Delivery"
+          title="On its way"
           value={outForDelivery}
           subtext="Live with courier personnel"
           icon={Zap}
@@ -85,9 +85,9 @@ export const BentoGrid: React.FC<BentoGridProps> = ({
           glowColor="orange"
         />
         <StatCard
-          title="Delivery Success"
-          value="99.4%"
-          subtext="OTP verified handovers"
+          title="All-Time Delivered"
+          value="14"
+          subtext="Verified doorstep handovers"
           icon={ShieldCheck}
           glowColor="purple"
         />
@@ -124,11 +124,11 @@ export const BentoGrid: React.FC<BentoGridProps> = ({
                 : 'text-white/60 hover:text-white'
             }`}
           >
-            AI Models & Workspace
+            Assistant & Settings
           </button>
         </div>
         <span className="text-[11px] text-white/40 hidden sm:inline">
-          Spatial 3D Cards • VisionOS 2030
+          Operations Bento • 2030 Spatial
         </span>
       </div>
 
@@ -141,7 +141,7 @@ export const BentoGrid: React.FC<BentoGridProps> = ({
             onViewOtp={() => activeInTransit && onOpenOtp(activeInTransit)}
           />
 
-          {/* Card 2: Handover Code display */}
+          {/* Card 2: Handover Code display (spec 5.3: Delivery Code) */}
           <OtpCard
             code={activeInTransit?.otpCode || '482910'}
             parcelCode={activeInTransit?.parcelCode || 'PT-7621'}
@@ -160,7 +160,7 @@ export const BentoGrid: React.FC<BentoGridProps> = ({
           <div className="p-5 rounded-3xl glass-panel border border-white/[0.08] hover:border-white/[0.15] transition-all flex flex-col justify-between">
             <div className="flex items-center justify-between text-xs text-white/50">
               <span className="uppercase text-[10px] tracking-wider font-semibold text-primary">
-                Instant Operations
+                Quick Actions
               </span>
               <Zap className="w-4 h-4 text-primary" />
             </div>
@@ -184,7 +184,7 @@ export const BentoGrid: React.FC<BentoGridProps> = ({
               </button>
             </div>
             <div className="text-[10px] text-white/40">
-              Connected to 4 courier gateways: Amazon, Blue Dart, Delhivery, DTDC
+              Private to your household • End-to-end custody tracking
             </div>
           </div>
 
@@ -202,7 +202,7 @@ export const BentoGrid: React.FC<BentoGridProps> = ({
           {/* Card 8: Conversation Stats */}
           <ConversationStatsCard />
 
-          {/* Card 9: Active Spatial Memory */}
+          {/* Card 9: Household Delivery Preferences */}
           <MemoryCard />
 
           {/* Card 10: Recent Chats */}

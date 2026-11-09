@@ -22,8 +22,8 @@ export const ChatInput: React.FC<ChatInputProps> = ({
 
   const promptSuggestions = [
     'Schedule my Amazon delivery',
-    'What is my handover OTP?',
-    'Any parcels arrived today?',
+    'When is my parcel arriving today?',
+    'Any packages waiting at Gate 1?',
     'Self-pickup request',
   ];
 
@@ -68,19 +68,20 @@ export const ChatInput: React.FC<ChatInputProps> = ({
         ))}
       </div>
 
-      {/* Main Floating Search / Chat Box with Animated Gradient Border */}
+      {/* Main Floating Search / Chat Box with Subtle Focused Border */}
       <div className="relative group">
         {/* Animated Rotating Gradient Stroke Border */}
-        <div className="absolute -inset-[1.5px] rounded-3xl bg-gradient-to-r from-[#FF5D00] via-[#9333EA] to-[#3B82F6] opacity-75 blur-[2px] group-hover:opacity-100 group-hover:blur-[3px] transition duration-700 animate-gradient-border" />
+        <div className="absolute -inset-[1px] rounded-3xl bg-gradient-to-r from-[#FF5D00] via-[#9333EA] to-[#3B82F6] opacity-60 blur-[2px] group-hover:opacity-90 group-hover:blur-[3px] transition duration-700 animate-gradient-border" />
 
         {/* Inner Input Card */}
         <div className="relative rounded-3xl bg-[#0D0101]/95 backdrop-blur-2xl border border-white/[0.1] p-3 sm:p-4 shadow-glass-lg">
           {/* Attachment Preview (if any) */}
           {attachment && (
             <div className="mb-2 flex items-center gap-2 p-2 rounded-2xl bg-white/[0.05] border border-white/10 w-fit">
-              <ImageIcon className="w-3.5 h-3.5 text-primary" />
+              <ImageIcon className="w-4 h-4 text-primary" />
               <span className="text-xs text-white/80">{attachment}</span>
               <button
+                type="button"
                 onClick={() => setAttachment(null)}
                 className="p-1 hover:text-rose-400 text-white/40 transition-colors"
               >
@@ -120,7 +121,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="Ask anything about parcels, scheduling, OTP codes, or society operations..."
+              placeholder="Ask about your parcels or bookings..."
               rows={1}
               className="flex-1 max-h-32 bg-transparent text-sm text-white placeholder-white/40 resize-none outline-none py-1.5 px-2 font-normal"
               style={{ minHeight: '36px' }}
@@ -145,4 +146,3 @@ export const ChatInput: React.FC<ChatInputProps> = ({
     </div>
   );
 };
-

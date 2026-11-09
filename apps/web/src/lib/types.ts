@@ -6,7 +6,7 @@ export interface ChatMessage {
   content: string;
   timestamp: string;
   actionCard?: {
-    type: 'PARCEL_LIST' | 'SLOT_PICKER' | 'OTP_DISPLAY' | 'DELIVERY_STATUS' | 'CONFIRMATION';
+    type: 'PARCEL_LIST' | 'SLOT_PICKER' | 'OTP_DISPLAY' | 'OTP_ACTION' | 'DELIVERY_STATUS' | 'CONFIRMATION';
     data: any;
   };
 }

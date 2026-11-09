@@ -23,6 +23,8 @@ interface SidebarProps {
   setCollapsed: (collapsed: boolean) => void;
   activeRole: ActiveRole;
   onNewChat: () => void;
+  onOpenSchedule?: () => void;
+  onOpenRegister?: () => void;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -30,24 +32,83 @@ export const Sidebar: React.FC<SidebarProps> = ({
   setActiveView,
   collapsed,
   setCollapsed,
-  activeRole: _activeRole,
+  activeRole,
   onNewChat,
+  onOpenSchedule,
+  onOpenRegister,
 }) => {
-  const navItems = [
-    { id: 'chat', label: 'AI Concierge', icon: Sparkles, badge: 'Vision' },
-    { id: 'bento', label: 'Operations Bento', icon: LayoutGrid, badge: 'Live' },
-    { id: 'resident', label: 'Resident Portal', icon: Package },
-    { id: 'reception', label: 'Reception Desk', icon: Inbox },
-    { id: 'executive', label: 'Executive Console', icon: Truck },
-    { id: 'admin', label: 'Society Admin', icon: ShieldCheck },
-  ];
+  // Role-filtered navigation items (Spec Section 3 & 11.1)
+  const getNavItems = () => {
+    switch (activeRole) {
+      case 'RESIDENT':
+        return [
+          { id: 'resident', label: 'Resident Home', icon: Package },
+          { id: 'bento', label: 'Operations Bento', icon: LayoutGrid, badge: 'Live' },
+          { id: 'chat', label: 'AI Concierge', icon: Sparkles, badge: 'Vision' },
+        ];
+      case 'RECEPTION':
+        return [
+          { id: 'reception', label: 'Reception Concierge Desk', icon: Inbox, badge: 'Gate 1' },
+          { id: 'bento', label: 'Operations Bento', icon: LayoutGrid },
+          { id: 'chat', label: 'AI Concierge', icon: Sparkles },
+        ];
+      case 'DELIVERY_EXECUTIVE':
+        return [
+          { id: 'executive', label: 'Executive Run Sheet', icon: Truck, badge: 'Route' },
+          { id: 'bento', label: 'Operations Bento', icon: LayoutGrid },
+        ];
+      case 'SOCIETY_ADMIN':
+      default:
+        return [
+          { id: 'admin', label: 'Society Governance', icon: ShieldCheck, badge: 'Admin' },
+          { id: 'reception', label: 'Reception Desk', icon: Inbox },
+          { id: 'bento', label: 'Operations Bento', icon: LayoutGrid },
+          { id: 'chat', label: 'AI Concierge', icon: Sparkles },
+        ];
+    }
+  };
 
-  const recentPrompts = [
-    'Schedule Amazon PT-8942 for 7 PM',
-    'Show my handover OTP code',
-    'Register incoming Blue Dart package',
-    'Storage vault occupancy report',
-  ];
+  const navItems = getNavItems();
+
+  const getPrimaryAction = () => {
+    switch (activeRole) {
+      case 'RESIDENT':
+        return {
+          label: 'Schedule Delivery',
+          onClick: onOpenSchedule || (() => setActiveView('resident')),
+        };
+      case 'RECEPTION':
+        return {
+          label: 'Register Inbound',
+          onClick: onOpenRegister || (() => setActiveView('reception')),
+        };
+      case 'DELIVERY_EXECUTIVE':
+        return {
+          label: 'Today\'s Route',
+          onClick: () => setActiveView('executive'),
+        };
+      case 'SOCIETY_ADMIN':
+      default:
+        return {
+          label: 'Society Overview',
+          onClick: () => setActiveView('admin'),
+        };
+    }
+  };
+
+  const primaryAction = getPrimaryAction();
+
+  const recentActivity = activeRole === 'RESIDENT'
+    ? [
+        'Amazon PT-8942 waiting at Gate 1',
+        'Delhivery PT-7621 on its way',
+        'DTDC PT-6310 delivered yesterday',
+      ]
+    : [
+        'Gate 1 check-in: 4 packages logged',
+        'Shift route assigned to Rajesh Kumar',
+        'Vault Shelf A at 47% occupancy',
+      ];
 
   return (
     <aside
@@ -59,44 +120,45 @@ export const Sidebar: React.FC<SidebarProps> = ({
       <div className="space-y-4">
         {/* Brand & Collapse */}
         <div className="flex items-center justify-between px-2 pt-1">
-          <div className="flex items-center gap-3 overflow-hidden">
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-primary to-[#FF8C38] flex items-center justify-center shadow-glow-orange shrink-0">
-              <Box className="w-5 h-5 text-white stroke-[2.5]" />
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-primary to-[#FF8C38] flex items-center justify-center shadow-glow-orange shrink-0">
+              <Box className="w-5 h-5 text-white" />
             </div>
             {!collapsed && (
-              <div className="flex flex-col">
-                <span className="font-bold text-base tracking-tight text-white flex items-center gap-1.5">
-                  ParcelTime
-                  <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-primary/20 text-primary border border-primary/30">
+              <div>
+                <h1 className="text-base font-bold tracking-tight text-white flex items-center gap-1.5">
+                  <span>ParcelTime</span>
+                  <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-primary/20 text-primary font-mono border border-primary/30">
                     2030
                   </span>
-                </span>
-                <span className="text-[11px] text-white/40">Spatial Logistics</span>
+                </h1>
+                <p className="text-[11px] text-white/50 tracking-wider">Spatial Logistics</p>
               </div>
             )}
           </div>
 
           <button
             onClick={() => setCollapsed(!collapsed)}
-            className="p-1.5 rounded-xl hover:bg-white/[0.08] text-white/50 hover:text-white transition-all"
-            title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            className="p-1.5 rounded-xl hover:bg-white/[0.06] text-white/40 hover:text-white transition-colors"
+            aria-label="Toggle Sidebar"
           >
             {collapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
           </button>
         </div>
 
-        {/* New Chat / Request Button */}
+        {/* Primary Action Pill Button */}
         <button
-          onClick={onNewChat}
-          className={`w-full py-2.5 rounded-2xl bg-gradient-to-r from-primary to-[#FF701A] hover:brightness-110 text-white font-medium text-xs flex items-center justify-center gap-2 shadow-glow-orange hover:scale-[1.02] transition-all duration-200 active:scale-[0.98] ${
-            collapsed ? 'px-0' : 'px-3'
+          onClick={primaryAction.onClick}
+          className={`w-full py-2.5 px-3 rounded-2xl bg-gradient-to-r from-primary to-[#FF701A] hover:brightness-110 text-white font-semibold text-xs flex items-center justify-center gap-2 shadow-glow-orange transition-all hover:scale-102 active:scale-98 ${
+            collapsed ? 'px-0' : ''
           }`}
+          title={primaryAction.label}
         >
-          <Plus className="w-4 h-4" />
-          {!collapsed && <span>New Instruction</span>}
+          <Plus className="w-4 h-4 stroke-[3]" />
+          {!collapsed && <span>{primaryAction.label}</span>}
         </button>
 
-        {/* Navigation items */}
+        {/* Navigation Tabs */}
         <nav className="space-y-1">
           {navItems.map((item) => {
             const Icon = item.icon;
@@ -105,70 +167,56 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <button
                 key={item.id}
                 onClick={() => setActiveView(item.id)}
-                className={`w-full flex items-center justify-between p-2.5 rounded-2xl transition-all text-xs font-medium ${
+                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl text-xs font-semibold transition-all duration-200 group relative ${
                   isActive
-                    ? 'bg-primary/15 text-primary border border-primary/30 shadow-glow-orange/20'
-                    : 'text-white/60 hover:text-white hover:bg-white/[0.05]'
+                    ? 'bg-primary/20 text-primary border border-primary/40 shadow-glow-orange/20'
+                    : 'text-white/60 hover:text-white hover:bg-white/[0.04]'
                 }`}
                 title={collapsed ? item.label : undefined}
               >
-                <div className="flex items-center gap-3">
-                  <Icon className={`w-4 h-4 ${isActive ? 'text-primary' : 'text-white/60'}`} />
-                  {!collapsed && <span>{item.label}</span>}
-                </div>
-                {!collapsed && item.badge && (
-                  <span
-                    className={`text-[9px] px-1.5 py-0.5 rounded-full ${
-                      isActive ? 'bg-primary/20 text-primary' : 'bg-white/10 text-white/50'
-                    }`}
-                  >
-                    {item.badge}
-                  </span>
+                <Icon className={`w-4 h-4 shrink-0 transition-transform group-hover:scale-110 ${isActive ? 'text-primary' : ''}`} />
+                {!collapsed && (
+                  <div className="flex-1 flex items-center justify-between text-left">
+                    <span>{item.label}</span>
+                    {item.badge && (
+                      <span className={`text-[10px] px-1.5 py-0.5 rounded-md font-mono ${
+                        isActive ? 'bg-primary text-white' : 'bg-white/[0.06] text-white/40'
+                      }`}>
+                        {item.badge}
+                      </span>
+                    )}
+                  </div>
                 )}
               </button>
             );
           })}
         </nav>
-
-        {/* Pinned / Recent Prompts (Visible when expanded) */}
-        {!collapsed && (
-          <div className="pt-2 border-t border-white/[0.06] space-y-2">
-            <div className="flex items-center gap-1.5 px-2 text-[10px] font-semibold tracking-wider text-white/40 uppercase">
-              <History className="w-3 h-3" />
-              <span>Recent Tasks</span>
-            </div>
-            <div className="space-y-1">
-              {recentPrompts.map((prompt, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => {
-                    setActiveView('chat');
-                  }}
-                  className="w-full text-left truncate px-2.5 py-1.5 rounded-xl text-[11px] text-white/50 hover:text-white hover:bg-white/[0.04] transition-all"
-                >
-                  {prompt}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
       </div>
 
-      {/* Bottom Profile & Settings */}
-      <div className="pt-3 border-t border-white/[0.06] space-y-1">
-        <div className="flex items-center gap-3 p-2 rounded-2xl bg-white/[0.02] border border-white/[0.05]">
-          <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-purple-500/30 to-blue-500/30 border border-white/10 flex items-center justify-center font-bold text-xs text-white shrink-0">
-            PS
-          </div>
-          {!collapsed && (
-            <div className="flex-1 truncate">
-              <div className="text-xs font-semibold text-white truncate">Priya Sharma</div>
-              <div className="text-[10px] text-white/40 truncate">Unit A-102 • Owner</div>
+      {/* Bottom Section: Recent Activity */}
+      {!collapsed && (
+        <div className="pt-4 border-t border-white/[0.06] space-y-2">
+          <div className="flex items-center justify-between text-[11px] text-white/40 px-2 font-medium">
+            <div className="flex items-center gap-1.5">
+              <History className="w-3.5 h-3.5" />
+              <span>Recent Activity</span>
             </div>
-          )}
+            <button onClick={onNewChat} className="text-primary hover:underline text-[10px]">
+              New session
+            </button>
+          </div>
+          <div className="space-y-1">
+            {recentActivity.map((activity, i) => (
+              <div
+                key={i}
+                className="w-full text-left p-2 rounded-xl text-[11px] text-white/60 hover:text-white hover:bg-white/[0.03] transition-colors truncate"
+              >
+                {activity}
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
     </aside>
   );
 };
-

@@ -225,21 +225,32 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
                   </div>
                 )}
 
-                {/* OTP Display Card */}
-                {message.actionCard.type === 'OTP_DISPLAY' && (
-                  <div className="p-4 rounded-2xl bg-gradient-to-r from-primary/10 via-purple-500/10 to-blue-500/10 border border-primary/30 flex items-center justify-between">
+                {/* OTP Action Card (Code is never printed in plaintext per Security Rule C2) */}
+                {(message.actionCard.type === 'OTP_DISPLAY' || message.actionCard.type === 'OTP_ACTION') && (
+                  <div className="p-4 rounded-2xl bg-white/[0.04] border border-primary/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div>
                       <span className="text-[10px] text-primary uppercase font-bold tracking-wider block">
-                        One-Time Handover Code
+                        Secure Delivery Handover
                       </span>
-                      <div className="text-2xl font-mono font-bold tracking-widest text-white mt-0.5">
-                        {message.actionCard.data.code}
-                      </div>
-                      <span className="text-[10px] text-white/40">Give only when courier arrives</span>
+                      <p className="text-xs text-white/80 mt-0.5 font-medium">
+                        Your delivery code is ready for doorstep verification.
+                      </p>
+                      <span className="text-[10px] text-white/40 block mt-0.5">
+                        Private to your household • Never displayed in chat logs
+                      </span>
                     </div>
-                    <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center">
-                      <ShieldCheck className="w-6 h-6 text-primary" />
-                    </div>
+                    {onOpenOtp && (
+                      <button
+                        onClick={() => {
+                          const p = message.actionCard?.data?.parcel;
+                          if (p) onOpenOtp(p);
+                        }}
+                        className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-primary to-[#FF701A] hover:brightness-110 text-white font-semibold text-xs flex items-center justify-center gap-1.5 shadow-glow-orange shrink-0 transition-all hover:scale-102"
+                      >
+                        <ShieldCheck className="w-4 h-4" />
+                        <span>Show Delivery Code</span>
+                      </button>
+                    )}
                   </div>
                 )}
               </div>

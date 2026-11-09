@@ -68,13 +68,13 @@ export default function HomePage() {
       if (lower.includes('otp') || lower.includes('code') || lower.includes('handover')) {
         const outParcel = parcels.find((p) => p.status === 'OUT_FOR_DELIVERY');
         if (outParcel) {
-          replyContent = `Here is your secure 6-digit Handover Code for **${outParcel.courier} (${outParcel.parcelCode})**. Please share this with the delivery executive only when they are at your door.`;
+          replyContent = `Your delivery code for **${outParcel.courier} (${outParcel.parcelCode})** is ready for doorstep handover. Per society security rules, codes are never printed in chat text or saved in history. Tap below to open your secure delivery sheet.`;
           actionCard = {
-            type: 'OTP_DISPLAY',
-            data: { code: outParcel.otpCode || '482910' },
+            type: 'OTP_ACTION',
+            data: { parcel: outParcel },
           };
         } else {
-          replyContent = 'You currently have no packages out for delivery requiring an OTP code.';
+          replyContent = 'You currently have no packages out for delivery requiring a delivery code.';
         }
       } else if (lower.includes('schedule') || lower.includes('book') || lower.includes('slot')) {
         replyContent =
@@ -244,6 +244,12 @@ export default function HomePage() {
           setCollapsed={setSidebarCollapsed}
           activeRole={activeRole}
           onNewChat={handleNewChat}
+          onOpenSchedule={() => {
+            const p = parcels.find((p) => p.status === 'RECEIVED');
+            if (p) setSelectedParcelForSchedule(p);
+            else setActiveView('resident');
+          }}
+          onOpenRegister={() => setIsRegisterOpen(true)}
         />
 
         {/* Dynamic Center Stage */}
@@ -313,7 +319,7 @@ export default function HomePage() {
       </div>
 
       {/* Floating Bottom Navigation on Mobile */}
-      <MobileNav activeView={activeView} setActiveView={setActiveView} />
+      <MobileNav activeView={activeView} setActiveView={setActiveView} activeRole={activeRole} />
 
       {/* Modals */}
       <RegisterParcelModal

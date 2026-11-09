@@ -5,9 +5,9 @@ import { HardDrive } from 'lucide-react';
 
 export const StorageCard: React.FC = () => {
   const vaults = [
-    { name: 'Storage Vault - Shelf A', capacity: 80, used: 38, pct: 47 },
+    { name: 'Gate 1 Vault - Shelf A', capacity: 80, used: 38, pct: 47 },
     { name: 'Front Reception Counter', capacity: 30, used: 8, pct: 27 },
-    { name: 'Smart Locker Bay 1', capacity: 40, used: 26, pct: 65 },
+    { name: 'Oversized Holding Bay', capacity: 40, used: 16, pct: 40 },
   ];
 
   return (
@@ -17,7 +17,7 @@ export const StorageCard: React.FC = () => {
           <HardDrive className="w-4 h-4 text-blue-400" />
           <span className="text-xs font-semibold text-white">Society Storage Vault</span>
         </div>
-        <span className="text-[10px] text-emerald-400 font-medium">72 Units Free</span>
+        <span className="text-[10px] text-emerald-400 font-medium">88 Units Free</span>
       </div>
 
       <div className="my-3 space-y-2.5">
@@ -47,9 +47,8 @@ export const StorageCard: React.FC = () => {
 
       <div className="flex items-center justify-between text-[10px] text-white/40 pt-1 border-t border-white/[0.06]">
         <span>Auto-aging alert: 7 days</span>
-        <span className="text-primary hover:underline cursor-pointer">Reassign Vault</span>
+        <span className="text-primary hover:underline cursor-pointer">Storage rules</span>
       </div>
     </div>
   );
 };
-

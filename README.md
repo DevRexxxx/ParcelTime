@@ -18,7 +18,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-2.0.2-FF5D00?style=flat-square" alt="Version 2.0.2" />
+  <img src="https://img.shields.io/badge/version-2.0.3-FF5D00?style=flat-square" alt="Version 2.0.3" />
   <img src="https://img.shields.io/badge/monorepo-turborepo-blue?style=flat-square&logo=turborepo" alt="Turborepo" />
   <img src="https://img.shields.io/badge/next.js-14-black?style=flat-square&logo=next.js" alt="Next.js 14" />
   <img src="https://img.shields.io/badge/react-18-61dafb?style=flat-square&logo=react" alt="React 18" />
@@ -456,6 +456,7 @@ ParcelTime follows [Semantic Versioning](https://semver.org/). For complete tech
 
 | Version | Release Date | Key Implementations & Highlights |
 |---|---|---|
+| **`v2.0.3`** | 2026-11-09 | **Spec v2 UI/UX Hardening & Zero-Trust Security Audit Alignment:** Fixed critical findings from [`09_ui_fix_and_build_spec.md`](file:///d:/Projects/ParcelTime/09_ui_fix_and_build_spec.md); purged insecure code delegation memory; eliminated plain OTP text from AI chat bubbles and exports in favor of interactive `OTP_ACTION` buttons; removed code copy buttons with safety lines; unified resident unit to A-102 (Tower A - Aspen) across all mock data; purged deferred smart locker references; pruned staff prompts from resident suggestion chips; decoupled 15-card Bento from ChatArea for focused conversational stream; role-aware dynamic sidebar and mobile navigation. |
 | **`v2.0.2`** | 2026-11-09 | **Spatial QR Label Engine, Optical Barcode Laser Sentinel & Persona Orchestration:** Physical QR label badge modal ([`QrBadgeModal.tsx`](file:///d:/Projects/ParcelTime/apps/web/src/components/modals/QrBadgeModal.tsx)) with SVG QR matrix & native printing, animated optical barcode laser simulation, society directory typeahead auto-fill, duplicate tracking code sentinel, touch kiosk numeric keypad ([`VerifyOtpModal.tsx`](file:///d:/Projects/ParcelTime/apps/web/src/components/modals/VerifyOtpModal.tsx)), and automatic persona-to-view navigation on role change. Zero-warning Next.js production build. |
 | **`v2.0.1`** | 2026-11-09 | **CI Lockfile Synchronization & Workflow Hardening:** Synchronized `pnpm-lock.yaml` with root `devDependencies` (`@typescript-eslint/parser`, `@typescript-eslint/eslint-plugin`) and enforced `pnpm install --frozen-lockfile` in GitHub Actions CI pipeline. |
 | **`v2.0.0`** | 2026-11-08 | **2030 Spatial Design System & AI Concierge:** Next.js 14 App Router with Pure Black (`#0D0101`) theme, animated gradient border chat box, 14 Bento Grid spatial cards (Conversation stats, AI model selector, active memory, recent chats, files, knowledge base, workspace, prompt library, settings), Document Viewer & PDF preview modal, Bulk CSV unit onboarding, rapid typeahead search, notification preferences & device push tokens, and 21 passing test suites. |

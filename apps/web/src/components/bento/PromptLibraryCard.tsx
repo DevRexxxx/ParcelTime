@@ -9,9 +9,9 @@ interface PromptLibraryCardProps {
 
 export const PromptLibraryCard: React.FC<PromptLibraryCardProps> = ({ onExecutePrompt }) => {
   const prompts = [
-    'Check remaining rack vacancy in Main Locker',
-    'Schedule batch evening delivery for Unit 402',
-    'Generate one-time gate OTP for courier',
+    'When is my Amazon package arriving today?',
+    'Schedule my pending delivery for tomorrow evening',
+    'How do I collect my parcel from Gate 1 reception?',
   ];
 
   return (
@@ -19,7 +19,7 @@ export const PromptLibraryCard: React.FC<PromptLibraryCardProps> = ({ onExecuteP
       <div className="flex items-center justify-between text-xs text-white/50 mb-3">
         <span className="font-semibold tracking-wider text-[10px] uppercase text-pink-400 flex items-center gap-1.5">
           <Bookmark className="w-3.5 h-3.5" />
-          Prompt Library
+          Quick Prompts
         </span>
         <span className="text-[10px] text-white/40 font-mono">1-Click</span>
       </div>
@@ -43,10 +43,9 @@ export const PromptLibraryCard: React.FC<PromptLibraryCardProps> = ({ onExecuteP
       </div>
 
       <div className="pt-2 border-t border-white/[0.06] flex items-center justify-between text-[11px] text-white/40">
-        <span>Curated for high-speed ops</span>
-        <span className="text-pink-400 text-[10px] cursor-pointer hover:underline">Add template</span>
+        <span>Resident assistance shortcuts</span>
+        <span className="text-pink-400 text-[10px] cursor-pointer hover:underline">Help center</span>
       </div>
     </div>
   );
 };
-
