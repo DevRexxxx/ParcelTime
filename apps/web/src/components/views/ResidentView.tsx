@@ -13,9 +13,18 @@ import {
   UserCheck,
   X,
   Check,
+  Truck,
+  Mail,
+  Plus,
+  Navigation,
+  Radio,
+  Clock,
 } from 'lucide-react';
-import { ParcelItem } from '@/lib/types';
+import { ParcelItem, ShipmentItem, IntegrationItem } from '@/lib/types';
+import { INITIAL_SHIPMENTS, INITIAL_INTEGRATIONS } from '@/lib/mockData';
 import { getStatusBadge } from '@/lib/utils';
+import { TrackShipmentModal } from '../modals/TrackShipmentModal';
+import { IntegrationsModal } from '../modals/IntegrationsModal';
 
 interface ResidentViewProps {
   parcels: ParcelItem[];
@@ -32,9 +41,13 @@ export const ResidentView: React.FC<ResidentViewProps> = ({
   onOpenOtp,
   onRequestSelfPickup,
 }) => {
-  const [activeTab, setActiveTab] = useState<'active' | 'history'>('active');
+  const [activeTab, setActiveTab] = useState<'active' | 'shipments' | 'history'>('active');
   const [search, setSearch] = useState('');
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [shipments, setShipments] = useState<ShipmentItem[]>(INITIAL_SHIPMENTS);
+  const [integrations, setIntegrations] = useState<IntegrationItem[]>(INITIAL_INTEGRATIONS);
+  const [isTrackModalOpen, setIsTrackModalOpen] = useState(false);
+  const [isIntegrationsModalOpen, setIsIntegrationsModalOpen] = useState(false);
 
   // Self-pickup modal state
   const [pickupModalParcel, setPickupModalParcel] = useState<ParcelItem | null>(null);
@@ -53,6 +66,49 @@ export const ResidentView: React.FC<ResidentViewProps> = ({
       p.trackingNumber.toLowerCase().includes(search.toLowerCase()) ||
       p.parcelCode.toLowerCase().includes(search.toLowerCase())
   );
+
+  const displayedShipments = shipments.filter(
+    (s) =>
+      s.trackingNumber.toLowerCase().includes(search.toLowerCase()) ||
+      s.carrierCode.toLowerCase().includes(search.toLowerCase()) ||
+      s.merchantName.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const handleAddShipment = (input: Omit<ShipmentItem, 'id' | 'internalStatus' | 'externalStatus' | 'discoverySource'>) => {
+    const newShipment: ShipmentItem = {
+      id: `sh-${Date.now()}`,
+      trackingNumber: input.trackingNumber,
+      carrierCode: input.carrierCode,
+      merchantName: input.merchantName,
+      orderReference: input.orderReference,
+      externalStatus: 'IN_TRANSIT',
+      internalStatus: 'EXPECTED',
+      discoverySource: 'MANUAL',
+      estimatedDeliveryAt: input.estimatedDeliveryAt || 'In 1-2 business days',
+      lastCarrierEventAt: 'Just now',
+      latestEventDescription: input.latestEventDescription || 'Shipment registered manually by resident',
+      location: 'Transit Network',
+    };
+    setShipments((prev) => [newShipment, ...prev]);
+  };
+
+  const handleToggleGmail = (connected: boolean, deleteData = false) => {
+    setIntegrations((prev) =>
+      prev.map((i) =>
+        i.provider === 'GMAIL'
+          ? {
+              ...i,
+              status: connected ? 'ACTIVE' : 'REVOKED',
+              lastSyncedAt: connected ? 'Just now (Auto-watch active)' : undefined,
+            }
+          : i
+      )
+    );
+    if (!connected && deleteData) {
+      // Purge email discovered shipments that haven't been received at vault
+      setShipments((prev) => prev.filter((s) => s.discoverySource !== 'GMAIL' || s.matchedParcelId));
+    }
+  };
 
   const needsScheduling = activeParcels.filter(
     (p) => p.status === 'RECEIVED' && p.fulfillmentMode !== 'SELF_PICKUP'
@@ -180,8 +236,8 @@ export const ResidentView: React.FC<ResidentViewProps> = ({
         )}
 
         {/* Tab & Search Controls */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="flex items-center gap-2 p-1 rounded-2xl bg-white/[0.04] border border-white/[0.08] w-fit">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center gap-2 p-1 rounded-2xl bg-white/[0.04] border border-white/[0.08] w-fit">
             <button
               onClick={() => setActiveTab('active')}
               className={`px-4 py-1.5 rounded-xl text-xs font-semibold transition-all ${
@@ -190,7 +246,18 @@ export const ResidentView: React.FC<ResidentViewProps> = ({
                   : 'text-white/50 hover:text-white'
               }`}
             >
-              Active Packages ({activeParcels.length})
+              Vault Packages ({activeParcels.length})
+            </button>
+            <button
+              onClick={() => setActiveTab('shipments')}
+              className={`px-4 py-1.5 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 ${
+                activeTab === 'shipments'
+                  ? 'bg-primary text-white shadow-glow-orange'
+                  : 'text-white/50 hover:text-white'
+              }`}
+            >
+              <Truck className="w-3.5 h-3.5" />
+              <span>Live Shipments ({shipments.length})</span>
             </button>
             <button
               onClick={() => setActiveTab('history')}
@@ -204,19 +271,159 @@ export const ResidentView: React.FC<ResidentViewProps> = ({
             </button>
           </div>
 
-          <div className="relative">
-            <Search className="w-3.5 h-3.5 text-white/40 absolute left-3.5 top-3" />
-            <input
-              type="text"
-              placeholder="Search by courier or tracking ID..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="pl-9 pr-4 py-2 rounded-2xl bg-white/[0.03] border border-white/[0.08] text-xs text-white placeholder-white/40 outline-none focus:border-primary/50 w-full sm:w-64"
-            />
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setIsTrackModalOpen(true)}
+              className="px-3.5 py-2 rounded-2xl bg-primary/10 hover:bg-primary/20 text-primary border border-primary/30 text-xs font-semibold flex items-center gap-1.5 transition-all shadow-glow-orange/20"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>Track Shipment</span>
+            </button>
+
+            <button
+              onClick={() => setIsIntegrationsModalOpen(true)}
+              className="px-3.5 py-2 rounded-2xl bg-white/[0.04] hover:bg-white/[0.08] text-white/80 hover:text-white border border-white/10 text-xs font-medium flex items-center gap-1.5 transition-all"
+            >
+              <Mail className="w-3.5 h-3.5 text-red-400" />
+              <span>Gmail Sync</span>
+              {integrations.find((i) => i.provider === 'GMAIL')?.status === 'ACTIVE' && (
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              )}
+            </button>
+
+            <div className="relative">
+              <Search className="w-3.5 h-3.5 text-white/40 absolute left-3.5 top-3" />
+              <input
+                type="text"
+                placeholder="Search tracking, courier..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="pl-9 pr-4 py-2 rounded-2xl bg-white/[0.03] border border-white/[0.08] text-xs text-white placeholder-white/40 outline-none focus:border-primary/50 w-full sm:w-56"
+              />
+            </div>
           </div>
         </div>
 
-        {/* Parcels Grid */}
+        {/* Live Shipments Grid (USIE) */}
+        {activeTab === 'shipments' && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {displayedShipments.length === 0 ? (
+              <div className="col-span-2 p-12 rounded-3xl glass-panel text-center text-white/40 text-xs space-y-2">
+                <Truck className="w-8 h-8 mx-auto text-white/20" />
+                <p>No external shipments currently tracked.</p>
+                <button
+                  onClick={() => setIsTrackModalOpen(true)}
+                  className="px-4 py-1.5 bg-primary/20 text-primary text-xs font-semibold rounded-xl border border-primary/30 hover:bg-primary/30"
+                >
+                  Track your first package
+                </button>
+              </div>
+            ) : (
+              displayedShipments.map((s) => {
+                const isOutForDelivery = s.externalStatus === 'OUT_FOR_DELIVERY';
+                const isDeliveredGate = s.externalStatus === 'DELIVERED_TO_SOCIETY';
+                const isVerifiedInVault = Boolean(s.matchedParcelId);
+
+                return (
+                  <div
+                    key={s.id}
+                    className="p-5 rounded-3xl glass-panel border border-white/[0.08] hover:border-white/20 transition-all flex flex-col justify-between space-y-4"
+                  >
+                    <div className="space-y-3">
+                      {/* Carrier & Badges */}
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                          <div className="w-9 h-9 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-bold text-xs">
+                            <Truck className="w-4 h-4" />
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <h4 className="text-sm font-bold text-white">{s.carrierCode}</h4>
+                              <span className="text-[10px] text-white/50">via {s.merchantName}</span>
+                            </div>
+                            <span className="text-xs text-white/40 font-mono">{s.trackingNumber}</span>
+                          </div>
+                        </div>
+
+                        <div className="flex flex-col items-end gap-1">
+                          {isOutForDelivery && (
+                            <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-orange-400 bg-orange-500/10 border border-orange-500/30 px-2.5 py-0.5 rounded-full shadow-glow-orange/20 animate-pulse">
+                              <Radio className="w-3 h-3 text-orange-400" /> Out for Delivery
+                            </span>
+                          )}
+                          {isDeliveredGate && (
+                            <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-purple-400 bg-purple-500/10 border border-purple-500/30 px-2.5 py-0.5 rounded-full">
+                              🏢 At Society Gate
+                            </span>
+                          )}
+                          {s.externalStatus === 'IN_TRANSIT' && (
+                            <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-cyan-400 bg-cyan-500/10 border border-cyan-500/30 px-2.5 py-0.5 rounded-full">
+                              ⚡ In Transit
+                            </span>
+                          )}
+
+                          <span className="text-[10px] text-white/40 flex items-center gap-1">
+                            {s.discoverySource === 'GMAIL' ? (
+                              <>
+                                <Mail className="w-2.5 h-2.5 text-red-400" /> Gmail Ingestion
+                              </>
+                            ) : (
+                              <>
+                                <Navigation className="w-2.5 h-2.5 text-primary" /> Manual Tracking
+                              </>
+                            )}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Latest Event Note */}
+                      <div className="p-3 rounded-2xl bg-white/[0.02] border border-white/[0.05] space-y-1">
+                        <div className="flex items-center justify-between text-[11px]">
+                          <span className="text-white/80 font-medium">{s.latestEventDescription}</span>
+                          <span className="text-white/40">{s.lastCarrierEventAt}</span>
+                        </div>
+                        {s.location && (
+                          <p className="text-[10px] text-white/40 flex items-center gap-1">
+                            <MapPin className="w-3 h-3 text-white/30" />
+                            {s.location}
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Handover Separation Status */}
+                      <div className="text-xs">
+                        {isVerifiedInVault ? (
+                          <div className="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 flex items-center gap-2">
+                            <CheckCircle2 className="w-4 h-4 shrink-0" />
+                            <span>Physically verified & stored in gate vault. Ready for doorstep delivery or gate pickup!</span>
+                          </div>
+                        ) : isDeliveredGate ? (
+                          <div className="p-2.5 rounded-xl bg-purple-500/10 border border-purple-500/30 text-purple-300 flex items-center gap-2">
+                            <Clock className="w-4 h-4 shrink-0 text-purple-400" />
+                            <span>Courier delivered to society gate desk. Reception staff will verify physical custody shortly.</span>
+                          </div>
+                        ) : (
+                          <div className="p-2.5 rounded-xl bg-white/[0.03] border border-white/[0.06] text-white/60 flex items-center gap-2">
+                            <Radio className="w-3.5 h-3.5 text-primary shrink-0" />
+                            <span>En-route. Expected: <strong className="text-white">{s.estimatedDeliveryAt}</strong></span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between pt-2 border-t border-white/[0.06] text-[11px] text-white/40">
+                      <span>Order #{s.orderReference || 'N/A'}</span>
+                      <span className="text-primary font-medium">Auto-Synced</span>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+        )}
+
+        {/* Parcels Grid (Vault Packages & History) */}
+        {activeTab !== 'shipments' && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {displayed.length === 0 ? (
             <div className="col-span-2 p-12 rounded-3xl glass-panel text-center text-white/40 text-xs">
@@ -370,7 +577,23 @@ export const ResidentView: React.FC<ResidentViewProps> = ({
             })
           )}
         </div>
+        )}
       </div>
+
+      {/* Track Shipment Modal (USIE Universal Fallback) */}
+      <TrackShipmentModal
+        isOpen={isTrackModalOpen}
+        onClose={() => setIsTrackModalOpen(false)}
+        onTrack={handleAddShipment}
+      />
+
+      {/* Integrations Modal (USIE Gmail Discovery & Privacy) */}
+      <IntegrationsModal
+        isOpen={isIntegrationsModalOpen}
+        onClose={() => setIsIntegrationsModalOpen(false)}
+        integrations={integrations}
+        onToggleGmail={handleToggleGmail}
+      />
 
       {/* Hybrid Fulfillment: Self-Pickup Request Modal (Roadmap 4.2 — P0) */}
       {pickupModalParcel && (

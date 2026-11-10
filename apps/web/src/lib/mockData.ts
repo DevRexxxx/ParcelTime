@@ -1,4 +1,4 @@
-import { ParcelItem, SlotItem, DeliveryTaskItem } from './types';
+import { ParcelItem, SlotItem, DeliveryTaskItem, ShipmentItem, IntegrationItem } from './types';
 
 export const INITIAL_PARCELS: ParcelItem[] = [
   {
@@ -166,3 +166,61 @@ export const INITIAL_TASKS: DeliveryTaskItem[] = [
     slotWindow: 'Awaiting resident booking',
   },
 ];
+
+export const INITIAL_SHIPMENTS: ShipmentItem[] = [
+  {
+    id: 'sh-1',
+    trackingNumber: '140928192019',
+    carrierCode: 'DELHIVERY',
+    merchantName: 'Amazon India',
+    orderReference: '408-7291038-1928401',
+    externalStatus: 'OUT_FOR_DELIVERY',
+    internalStatus: 'EXPECTED',
+    discoverySource: 'GMAIL',
+    estimatedDeliveryAt: 'Today by 07:30 PM',
+    lastCarrierEventAt: 'Today at 04:12 PM',
+    latestEventDescription: 'Out for delivery with courier executive to Greenwood Palms gate',
+    location: 'Bengaluru Bellandur Hub',
+  },
+  {
+    id: 'sh-2',
+    trackingNumber: 'FMPC019284918',
+    carrierCode: 'EKART',
+    merchantName: 'Flipkart',
+    orderReference: 'OD1928374650192837',
+    externalStatus: 'IN_TRANSIT',
+    internalStatus: 'EXPECTED',
+    discoverySource: 'GMAIL',
+    estimatedDeliveryAt: 'Tomorrow by 02:00 PM',
+    lastCarrierEventAt: 'Today at 01:20 PM',
+    latestEventDescription: 'Arrived at Bangalore Sorting Hub',
+    location: 'Bangalore Central Facility',
+  },
+  {
+    id: 'sh-3',
+    trackingNumber: '7492018491',
+    carrierCode: 'BLUEDART',
+    merchantName: 'Myntra',
+    orderReference: 'MYN-4918230',
+    externalStatus: 'DELIVERED_TO_SOCIETY',
+    internalStatus: 'VERIFIED_AT_RECEPTION',
+    discoverySource: 'MANUAL',
+    estimatedDeliveryAt: 'Today at 02:00 PM',
+    lastCarrierEventAt: 'Today at 02:15 PM',
+    latestEventDescription: 'Delivered at society gate reception desk',
+    location: 'Greenwood Palms Gate 1 Desk',
+    matchedParcelId: 'p-1',
+  },
+];
+
+export const INITIAL_INTEGRATIONS: IntegrationItem[] = [
+  {
+    id: 'int-gmail',
+    provider: 'GMAIL',
+    status: 'ACTIVE',
+    grantedScopes: ['https://www.googleapis.com/auth/gmail.readonly'],
+    lastSyncedAt: 'Today, 11:42 PM (Auto-watch active)',
+    accountEmail: 'priya.sharma@gmail.com',
+  },
+];
+

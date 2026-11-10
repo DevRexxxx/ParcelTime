@@ -69,4 +69,30 @@ export interface PilotKpis {
   ageingParcelsCount: number;
 }
 
+export interface ShipmentItem {
+  id: string;
+  trackingNumber: string;
+  carrierCode: string;
+  merchantName: string;
+  orderReference?: string;
+  externalStatus: 'LABEL_CREATED' | 'PICKED_UP' | 'IN_TRANSIT' | 'OUT_FOR_DELIVERY' | 'DELIVERED_TO_SOCIETY' | 'EXCEPTION';
+  internalStatus: 'EXPECTED' | 'RECEIVED_AT_GATE' | 'VERIFIED_AT_RECEPTION' | 'STORED' | 'READY_FOR_PICKUP' | 'SCHEDULED' | 'DELIVERED_TO_RESIDENT';
+  discoverySource: 'GMAIL' | 'MANUAL' | 'SHARE_FORWARD' | 'RECEPTION';
+  estimatedDeliveryAt?: string;
+  lastCarrierEventAt?: string;
+  latestEventDescription?: string;
+  location?: string;
+  matchedParcelId?: string;
+}
+
+export interface IntegrationItem {
+  id: string;
+  provider: 'GMAIL' | 'AFTERSHIP' | 'SHIPROCKET';
+  status: 'ACTIVE' | 'EXPIRED' | 'REVOKED' | 'ERROR';
+  grantedScopes: string[];
+  lastSyncedAt?: string;
+  accountEmail?: string;
+}
+
+
 

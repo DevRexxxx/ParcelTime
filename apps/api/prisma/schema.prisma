@@ -172,6 +172,8 @@ model Society {
   notifications    Notification[]
   outboxEvents     OutboxEvent[]
   auditLogs        AuditLog[]
+  shipments        Shipment[]
+  integrations     ExternalIntegration[]
 }
 
 model User {
@@ -195,6 +197,8 @@ model User {
   auditLogs           AuditLog[]
   pickupVerifications PickupRequest[]   @relation("VerifiedBy")
   approvedMemberships UnitMembership[]  @relation("ApprovedBy")
+  shipments           Shipment[]
+  integrations        ExternalIntegration[]
 }
 
 model SocietyMember {
@@ -234,6 +238,7 @@ model Unit {
   tower   Tower            @relation(fields: [towerId], references: [id])
   members UnitMembership[]
   parcels Parcel[]
+  shipments Shipment[]
 
   @@unique([societyId, towerId, unitNumber])
 }
@@ -328,6 +333,7 @@ model Parcel {
   otpChallenges   HandoverChallenge[]
   pickupRequests  PickupRequest[]
   auditLogs       AuditLog[]
+  shipments       Shipment[]
 
   @@unique([societyId, courier, trackingNumber])
   @@unique([societyId, parcelCode])
@@ -527,3 +533,190 @@ model AuditLog {
   @@index([societyId, createdAt])
   @@index([parcelId])
 }
+
+// -----------------------------------------------------------------------------
+// Live Shipment Integration Architecture (USIE)
+// -----------------------------------------------------------------------------
+
+enum ShipmentExternalStatus {
+  LABEL_CREATED
+  PICKED_UP
+  IN_TRANSIT
+  OUT_FOR_DELIVERY
+  DELIVERED_TO_SOCIETY
+  DELIVERED
+  EXCEPTION
+  FAILED_ATTEMPT
+  RETURNED_TO_SENDER
+}
+
+enum ShipmentInternalStatus {
+  EXPECTED
+  RECEIVED_AT_GATE
+  VERIFIED_AT_RECEPTION
+  STORED
+  READY_FOR_PICKUP
+  SCHEDULED
+  ASSIGNED_TO_EXECUTIVE
+  OUT_FOR_INTERNAL_DELIVERY
+  DELIVERED_TO_RESIDENT
+}
+
+enum ShipmentDiscoverySource {
+  GMAIL
+  MANUAL
+  SHARE_FORWARD
+  RECEPTION
+  MARKETPLACE_API
+  AGGREGATOR
+}
+
+enum IntegrationProvider {
+  GMAIL
+  AFTERSHIP
+  SHIPROCKET
+  DELHIVERY
+  FEDEX
+  BLUEDART
+}
+
+enum IntegrationStatus {
+  ACTIVE
+  EXPIRED
+  REVOKED
+  ERROR
+}
+
+enum WebhookInboxStatus {
+  PENDING
+  PROCESSED
+  FAILED
+  DEAD_LETTER
+}
+
+enum ShipmentEventDomain {
+  EXTERNAL_CARRIER
+  INTERNAL_CUSTODY
+}
+
+model Shipment {
+  id                  String                  @id @default(uuid())
+  societyId           String
+  residentId          String
+  unitId              String
+  orderReference      String?
+  merchantName        String?
+  trackingNumber      String
+  trackingNumberHash  String?
+  carrierCode         String
+  discoverySource     ShipmentDiscoverySource @default(MANUAL)
+  externalStatus      ShipmentExternalStatus  @default(IN_TRANSIT)
+  internalStatus      ShipmentInternalStatus  @default(EXPECTED)
+  estimatedDeliveryAt DateTime?
+  lastCarrierEventAt  DateTime?
+  lastSyncedAt        DateTime?
+  matchConfidence     Float                   @default(1.0)
+  matchedParcelId     String?
+  createdAt           DateTime                @default(now())
+  updatedAt           DateTime                @updatedAt
+
+  society             Society                 @relation(fields: [societyId], references: [id])
+  resident            User                    @relation(fields: [residentId], references: [id])
+  unit                Unit                    @relation(fields: [unitId], references: [id])
+  matchedParcel       Parcel?                 @relation(fields: [matchedParcelId], references: [id])
+  events              ShipmentEvent[]
+  sourceReferences    ShipmentSourceReference[]
+
+  @@unique([societyId, carrierCode, trackingNumber])
+  @@index([societyId, residentId])
+  @@index([societyId, externalStatus])
+  @@index([societyId, internalStatus])
+  @@index([trackingNumber])
+}
+
+model ShipmentSourceReference {
+  id                String                  @id @default(uuid())
+  shipmentId        String
+  sourceType        ShipmentDiscoverySource
+  externalReference String?
+  metadata          Json?
+  createdAt         DateTime                @default(now())
+
+  shipment          Shipment                @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+
+  @@index([shipmentId])
+}
+
+model ShipmentEvent {
+  id              String              @id @default(uuid())
+  shipmentId      String
+  eventDomain     ShipmentEventDomain @default(EXTERNAL_CARRIER)
+  eventCode       String
+  status          String
+  description     String?
+  location        String?
+  occurredAt      DateTime            @default(now())
+  receivedAt      DateTime            @default(now())
+  sourceProvider  String
+  providerEventId String?
+  payloadHash     String?
+  createdAt       DateTime            @default(now())
+
+  shipment        Shipment            @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+
+  @@index([shipmentId, occurredAt])
+}
+
+model WebhookInbox {
+  id              String             @id @default(uuid())
+  provider        String
+  providerEventId String?
+  idempotencyKey  String             @unique
+  payload         Json
+  status          WebhookInboxStatus @default(PENDING)
+  attemptCount    Int                @default(0)
+  lastError       String?
+  processedAt     DateTime?
+  createdAt       DateTime           @default(now())
+
+  @@index([provider, status])
+}
+
+model ExternalIntegration {
+  id                    String              @id @default(uuid())
+  societyId             String
+  userId                String
+  provider              IntegrationProvider
+  status                IntegrationStatus   @default(ACTIVE)
+  grantedScopes         String[]
+  encryptedAccessToken  String?
+  encryptedRefreshToken String?
+  watchExpiresAt        DateTime?
+  lastCursor            String?
+  lastSyncedAt          DateTime?
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+
+  society               Society             @relation(fields: [societyId], references: [id])
+  user                  User                @relation(fields: [userId], references: [id])
+  syncLogs              IntegrationSyncLog[]
+
+  @@unique([societyId, userId, provider])
+}
+
+model IntegrationSyncLog {
+  id             String              @id @default(uuid())
+  integrationId  String
+  syncType       String
+  cursor         String?
+  startedAt      DateTime            @default(now())
+  completedAt    DateTime?
+  status         String              @default("SUCCESS")
+  errorCategory  String?
+  itemsProcessed Int                 @default(0)
+
+  integration    ExternalIntegration @relation(fields: [integrationId], references: [id], onDelete: Cascade)
+
+  @@index([integrationId, startedAt])
+}
+

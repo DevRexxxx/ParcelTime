@@ -227,6 +227,9 @@ The parcel state machine is enforced exclusively through a single entry point:
 | **Notifications** | `/notifications` | Inbox list, mark read, device push tokens (`/devices`), category preferences |
 | **Reports** | `/reports` | Dashboard metrics, volume summaries, CSV exports |
 | **Audit** | `/audit-logs` | Immutable audit trail query with flagged override inspection |
+| **Shipments (USIE)** | `/shipments` | Inbound tracking, manual entry, reception expected shipments, physical parcel matching |
+| **Integrations** | `/integrations` | Gmail discovery OAuth, sync triggering, data privacy disconnect & erasure |
+| **Webhooks** | `/webhooks` | Public HMAC-SHA256 tracking webhook ingestion (AfterShip, Shiprocket, carriers) with durable inbox |
 
 ---
 
@@ -241,6 +244,7 @@ The parcel state machine is enforced exclusively through a single entry point:
 | [`schemas.test.ts`](file:///d:/Projects/ParcelTime/apps/api/src/test/schemas.test.ts) | Shared Runtime Contracts | Tests Zod validations for registration, bookings, and overrides |
 | [`features.test.ts`](file:///d:/Projects/ParcelTime/apps/api/src/test/features.test.ts) | Bulk Import, Devices, Overrides | Tests bulk unit parsing, device push registration, and slot blocking schemas |
 | [`roadmap-features.test.ts`](file:///d:/Projects/ParcelTime/apps/api/src/test/roadmap-features.test.ts) | Roadmap v2 (Consolidation, Hybrid, Security) | Multi-parcel consolidation, fulfillment modes, deterministic scoring, salted HMAC-SHA256 OTP, special parcel classes, resident hold mode |
+| [`shipment-usie.test.ts`](file:///d:/Projects/ParcelTime/apps/api/src/test/shipment-usie.test.ts) | Live Shipment Integration (USIE) | HMAC-SHA256 webhook signatures, carrier normalization, Gmail parser (Amazon, Flipkart), external delivery vs internal custody separation |
 
-**Total Tests:** 33 automated Vitest tests across 7 test suites (100% passing).
+**Total Tests:** 45 automated Vitest tests across 8 test suites (100% passing).
 

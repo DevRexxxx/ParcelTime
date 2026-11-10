@@ -6,6 +6,8 @@ import {
   Plus,
   Search,
   QrCode,
+  Truck,
+  ArrowRight,
 } from 'lucide-react';
 import { ParcelItem } from '@/lib/types';
 import { getStatusBadge } from '@/lib/utils';
@@ -61,6 +63,64 @@ export const ReceptionView: React.FC<ReceptionViewProps> = ({
             <Plus className="w-4 h-4 stroke-[3]" />
             <span>Register Inbound Parcel (&lt;30s)</span>
           </button>
+        </div>
+
+        {/* USIE Expected Inbound Carrier Deliveries */}
+        <div className="p-5 rounded-3xl bg-gradient-to-r from-cyan-500/10 via-primary/5 to-transparent border border-cyan-500/20 shadow-glass-sm space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <div className="p-2 rounded-xl bg-cyan-500/20 text-cyan-400 border border-cyan-500/30">
+                <Truck className="w-4 h-4" />
+              </div>
+              <div>
+                <h3 className="text-xs font-bold text-white flex items-center gap-2">
+                  <span>External Couriers Arriving Today (USIE Live Feeds)</span>
+                  <span className="px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-400 text-[10px] font-semibold border border-cyan-500/30">
+                    2 Arriving
+                  </span>
+                </h3>
+                <p className="text-[11px] text-white/60">
+                  Pre-notified by carrier tracking feeds (Delhivery, Ekart). Ready for physical intake when courier reaches gate.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+            <div className="p-3 rounded-2xl bg-white/[0.03] border border-white/[0.08] flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="w-2 h-2 rounded-full bg-orange-400 animate-pulse" />
+                <div>
+                  <div className="text-xs font-bold text-white">Delhivery • 140928192019</div>
+                  <div className="text-[10px] text-white/50">For Priya Sharma (Unit A-102) • Amazon</div>
+                </div>
+              </div>
+              <button
+                onClick={onOpenRegister}
+                className="px-2.5 py-1 rounded-xl bg-primary/20 hover:bg-primary/30 text-primary border border-primary/30 text-[11px] font-semibold flex items-center gap-1 transition-all"
+              >
+                <span>Check-in</span>
+                <ArrowRight className="w-3 h-3" />
+              </button>
+            </div>
+
+            <div className="p-3 rounded-2xl bg-white/[0.03] border border-white/[0.08] flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="w-2 h-2 rounded-full bg-cyan-400" />
+                <div>
+                  <div className="text-xs font-bold text-white">Ekart • FMPC019284918</div>
+                  <div className="text-[10px] text-white/50">For Priya Sharma (Unit A-102) • Flipkart</div>
+                </div>
+              </div>
+              <button
+                onClick={onOpenRegister}
+                className="px-2.5 py-1 rounded-xl bg-white/[0.05] hover:bg-white/[0.1] text-white/70 hover:text-white border border-white/10 text-[11px] font-medium flex items-center gap-1 transition-all"
+              >
+                <span>Check-in</span>
+                <ArrowRight className="w-3 h-3" />
+              </button>
+            </div>
+          </div>
         </div>
 
         {/* Filter bar */}

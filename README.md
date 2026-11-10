@@ -52,6 +52,7 @@ Every day, couriers flood residential gates with parcels marked *"arriving today
 
 ## 📺 Key Highlights
 
+- 🌐 **Unified Shipment Ingestion Engine (USIE)** — Automated inbound discovery and live carrier tracking across Delhivery, Blue Dart, Ekart, Amazon Logistics, and Shiprocket. Integrates Gmail push discovery, multi-carrier webhook ingestion with HMAC-SHA256 verification, durable webhook inbox, and strict separation between external carrier delivery and internal society vault custody.
 - 📦 **Smart Parcel Consolidation (P0)** — Group multiple packages for the same household into a single delivery run; item-level auditability, atomic delivery trip capacity, and unified resident notifications.
 - 🏢 **Hybrid Fulfillment Modes (P0)** — Society-configurable fulfillment: internal doorstep delivery, front-gate self-pickup (zero staff overhead), or resident-chosen hybrid with authorized family delegate collection.
 - 🧠 **Intelligent Scheduling & Deterministic Scoring (P1)** — Multi-factor scoring recommending windows based on same-unit consolidation matches, same-tower clustering, evening resident availability, and workload balance.

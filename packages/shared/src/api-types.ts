@@ -290,3 +290,63 @@ export interface PilotKpisDto {
   totalParcelsCount: number;
 }
 
+// Live Shipment Integration Architecture (USIE DTOs)
+export interface ShipmentEventDto {
+  id: string;
+  shipmentId: string;
+  eventDomain: 'EXTERNAL_CARRIER' | 'INTERNAL_CUSTODY';
+  eventCode: string;
+  status: string;
+  description?: string;
+  location?: string;
+  occurredAt: string;
+  receivedAt: string;
+  sourceProvider: string;
+}
+
+export interface ShipmentDto {
+  id: string;
+  societyId: string;
+  residentId: string;
+  unitId: string;
+  orderReference?: string;
+  merchantName?: string;
+  trackingNumber: string;
+  carrierCode: string;
+  discoverySource: 'GMAIL' | 'MANUAL' | 'SHARE_FORWARD' | 'RECEPTION' | 'MARKETPLACE_API' | 'AGGREGATOR';
+  externalStatus: string;
+  internalStatus: string;
+  estimatedDeliveryAt?: string;
+  lastCarrierEventAt?: string;
+  lastSyncedAt?: string;
+  matchConfidence: number;
+  matchedParcelId?: string;
+  events?: ShipmentEventDto[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ExternalIntegrationDto {
+  id: string;
+  societyId: string;
+  userId: string;
+  provider: 'GMAIL' | 'AFTERSHIP' | 'SHIPROCKET' | 'DELHIVERY' | 'FEDEX' | 'BLUEDART';
+  status: 'ACTIVE' | 'EXPIRED' | 'REVOKED' | 'ERROR';
+  grantedScopes: string[];
+  watchExpiresAt?: string;
+  lastCursor?: string;
+  lastSyncedAt?: string;
+  createdAt: string;
+}
+
+export interface WebhookInboxDto {
+  id: string;
+  provider: string;
+  providerEventId?: string;
+  status: 'PENDING' | 'PROCESSED' | 'FAILED' | 'DEAD_LETTER';
+  attemptCount: number;
+  createdAt: string;
+  processedAt?: string;
+}
+
+

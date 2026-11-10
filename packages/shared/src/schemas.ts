@@ -236,5 +236,52 @@ export const ResidentHoldSchema = z.object({
   reason: z.string().max(200).optional(),
 });
 
+// Live Shipment Integration Architecture (USIE) Schemas
+export const CreateManualShipmentSchema = z.object({
+  trackingNumber: z.string().min(4).max(60).trim(),
+  carrierCode: z.string().min(2).max(50).trim(),
+  orderReference: z.string().max(100).optional(),
+  merchantName: z.string().max(100).optional(),
+  estimatedDeliveryAt: z.string().datetime().optional().nullable(),
+  sourceType: z.enum(['MANUAL', 'SHARE_FORWARD']).default('MANUAL'),
+});
+
+export const ConnectIntegrationSchema = z.object({
+  provider: z.enum(['GMAIL', 'AFTERSHIP', 'SHIPROCKET']),
+  authCode: z.string().min(1),
+  redirectUri: z.string().url().optional(),
+});
+
+export const DisconnectIntegrationSchema = z.object({
+  provider: z.enum(['GMAIL', 'AFTERSHIP', 'SHIPROCKET']),
+  deleteData: z.boolean().default(false),
+});
+
+export const ShipmentWebhookPayloadSchema = z.object({
+  provider: z.string().min(2),
+  providerEventId: z.string().min(1).optional(),
+  trackingNumber: z.string().min(4),
+  carrierCode: z.string().optional(),
+  eventCode: z.string(),
+  status: z.string(),
+  description: z.string().optional(),
+  location: z.string().optional(),
+  occurredAt: z.string().datetime().optional(),
+  estimatedDeliveryAt: z.string().datetime().optional().nullable(),
+});
+
+export const MatchShipmentToParcelSchema = z.object({
+  shipmentId: z.string().uuid(),
+  parcelId: z.string().uuid(),
+});
+
+export const ShipmentQuerySchema = z.object({
+  status: z.string().optional(),
+  carrier: z.string().optional(),
+  limit: z.coerce.number().min(1).max(100).default(20),
+  cursor: z.string().optional(),
+});
+
+
 
 
