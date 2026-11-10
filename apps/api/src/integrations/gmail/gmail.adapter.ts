@@ -106,3 +106,4 @@ export class GmailAdapter {
     return GmailParser.parseEmail(email);
   }
 }
+

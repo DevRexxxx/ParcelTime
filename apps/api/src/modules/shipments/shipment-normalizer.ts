@@ -33,3 +33,4 @@ export class ShipmentNormalizer {
     return CanonicalCarrier.OTHER;
   }
 }
+

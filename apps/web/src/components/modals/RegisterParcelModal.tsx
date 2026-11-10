@@ -9,6 +9,8 @@ interface RegisterParcelModalProps {
   onClose: () => void;
   onRegister: (parcel: Partial<ParcelItem>) => void;
   existingParcels?: ParcelItem[];
+  initialCourier?: string;
+  initialTrackingNumber?: string;
 }
 
 const SOCIETY_DIRECTORY = [
@@ -29,11 +31,11 @@ export const RegisterParcelModal: React.FC<RegisterParcelModalProps> = ({
   onClose,
   onRegister,
   existingParcels = [],
+  initialCourier,
+  initialTrackingNumber,
 }) => {
-  if (!isOpen) return null;
-
-  const [courier, setCourier] = useState('Amazon Logistics');
-  const [trackingNumber, setTrackingNumber] = useState('');
+  const [courier, setCourier] = useState(initialCourier || 'Amazon Logistics');
+  const [trackingNumber, setTrackingNumber] = useState(initialTrackingNumber || '');
   const [unitNumber, setUnitNumber] = useState('102');
   const [tower, setTower] = useState('Tower A - Aspen');
   const [recipientName, setRecipientName] = useState('Priya Sharma');
@@ -41,6 +43,15 @@ export const RegisterParcelModal: React.FC<RegisterParcelModalProps> = ({
   const [notes, setNotes] = useState('');
   const [isScanning, setIsScanning] = useState(false);
   const [showUnitSuggestions, setShowUnitSuggestions] = useState(false);
+
+  React.useEffect(() => {
+    if (isOpen) {
+      if (initialCourier) setCourier(initialCourier);
+      if (initialTrackingNumber) setTrackingNumber(initialTrackingNumber);
+    }
+  }, [isOpen, initialCourier, initialTrackingNumber]);
+
+  if (!isOpen) return null;
 
   const couriers = [
     'Amazon Logistics',

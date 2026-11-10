@@ -15,7 +15,7 @@ import { QrBadgeModal } from '@/components/modals/QrBadgeModal';
 
 interface ReceptionViewProps {
   parcels: ParcelItem[];
-  onOpenRegister: () => void;
+  onOpenRegister: (prefill?: { courier?: string; trackingNumber?: string }) => void;
   onMoveStorage?: (parcel: ParcelItem) => void;
 }
 
@@ -57,7 +57,7 @@ export const ReceptionView: React.FC<ReceptionViewProps> = ({
           </div>
 
           <button
-            onClick={onOpenRegister}
+            onClick={() => onOpenRegister()}
             className="px-6 py-3 rounded-2xl bg-gradient-to-r from-primary to-[#FF701A] hover:brightness-110 text-white font-semibold text-xs shadow-glow-orange flex items-center gap-2 hover:scale-105 active:scale-95 transition-all"
           >
             <Plus className="w-4 h-4 stroke-[3]" />
@@ -96,7 +96,7 @@ export const ReceptionView: React.FC<ReceptionViewProps> = ({
                 </div>
               </div>
               <button
-                onClick={onOpenRegister}
+                onClick={() => onOpenRegister({ courier: 'Delhivery', trackingNumber: '140928192019' })}
                 className="px-2.5 py-1 rounded-xl bg-primary/20 hover:bg-primary/30 text-primary border border-primary/30 text-[11px] font-semibold flex items-center gap-1 transition-all"
               >
                 <span>Check-in</span>
@@ -113,7 +113,7 @@ export const ReceptionView: React.FC<ReceptionViewProps> = ({
                 </div>
               </div>
               <button
-                onClick={onOpenRegister}
+                onClick={() => onOpenRegister({ courier: 'Ekart', trackingNumber: 'FMPC019284918' })}
                 className="px-2.5 py-1 rounded-xl bg-white/[0.05] hover:bg-white/[0.1] text-white/70 hover:text-white border border-white/10 text-[11px] font-medium flex items-center gap-1 transition-all"
               >
                 <span>Check-in</span>

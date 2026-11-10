@@ -76,6 +76,43 @@ export async function registerParcel(
     newStatus: ParcelStatus.RECEIVED,
   });
 
+  // Auto-bridge to any matching expected USIE Shipment
+  try {
+    const cleanTracking = data.trackingNumber.trim().replace(/[\s\-_#:]+/g, '').toUpperCase();
+    const matchingShipment = await prisma.shipment.findFirst({
+      where: {
+        societyId,
+        trackingNumber: cleanTracking,
+        matchedParcelId: null,
+      },
+    });
+
+    if (matchingShipment) {
+      await prisma.shipment.update({
+        where: { id: matchingShipment.id },
+        data: {
+          matchedParcelId: parcel.id,
+          internalStatus: 'STORED' as any,
+          updatedAt: new Date(),
+        },
+      });
+
+      await prisma.shipmentEvent.create({
+        data: {
+          shipmentId: matchingShipment.id,
+          eventDomain: 'INTERNAL_CUSTODY' as any,
+          eventCode: 'RECEPTION_VERIFIED',
+          status: 'STORED',
+          description: `Auto-linked on physical gate registration. Parcel code: ${parcel.parcelCode}`,
+          location: 'Society Storage Vault',
+          sourceProvider: 'PARCELTIME_GATE',
+        },
+      });
+    }
+  } catch {
+    // Non-blocking auto-link
+  }
+
   return parcel;
 }
 

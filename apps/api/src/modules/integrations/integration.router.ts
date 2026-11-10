@@ -6,3 +6,4 @@ export const integrationRouter = Router();
 integrationRouter.get('/', controller.listIntegrations);
 integrationRouter.post('/gmail/connect', controller.connectGmail);
 integrationRouter.post('/disconnect', controller.disconnectIntegration);
+

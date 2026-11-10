@@ -17,3 +17,4 @@ shipmentRouter.post(
   requireRoles(UserRole.RECEPTION, UserRole.SOCIETY_ADMIN, UserRole.PLATFORM_ADMIN) as any,
   controller.matchShipmentToParcel
 );
+

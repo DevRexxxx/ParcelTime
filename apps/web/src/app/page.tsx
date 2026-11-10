@@ -28,6 +28,7 @@ export default function HomePage() {
 
   // Modals
   const [isRegisterOpen, setIsRegisterOpen] = useState(false);
+  const [registerPrefill, setRegisterPrefill] = useState<{ courier?: string; trackingNumber?: string } | undefined>(undefined);
   const [selectedParcelForSchedule, setSelectedParcelForSchedule] = useState<ParcelItem | null>(null);
   const [parcelsForConsolidation, setParcelsForConsolidation] = useState<ParcelItem[] | null>(null);
   const [selectedParcelForOtp, setSelectedParcelForOtp] = useState<ParcelItem | null>(null);
@@ -103,6 +104,10 @@ export default function HomePage() {
           type: 'PARCEL_LIST',
           data: parcels,
         };
+      } else if (lower.includes('shipment') || lower.includes('track') || lower.includes('courier') || lower.includes('delhivery') || lower.includes('ekart')) {
+        replyContent = `📦 **Live Incoming Shipments (USIE Engine):**\n- **Delhivery (140928192019):** Out for delivery with courier to Greenwood Palms gate.\n- **Ekart (FMPC019284918):** In transit from Bangalore Central Sorting Hub.\n- **Blue Dart (7492018491):** Arrived at gate reception and verified in storage vault.\n\nTap the **Live Shipments** tab on your dashboard to view real-time transit timelines or enter a manual tracking number!`;
+      } else if (lower.includes('gmail') || lower.includes('integration') || lower.includes('sync')) {
+        replyContent = `🔐 **Gmail Shipment Ingestion Status:**\nYour Gmail watch is active with least-privilege scope (\`gmail.readonly\`). We only scan order/shipping notifications from Amazon, Flipkart, Myntra, etc. and never store passwords or read personal emails. Tap the **Gmail Sync** button to trigger a manual sync or manage your privacy controls.`;
       } else if (lower.includes('pickup') || lower.includes('counter')) {
         replyContent =
           'I have recorded a **Self-Pickup Request** for your package. The reception guard will hold it at the front counter. Please bring a valid ID or show your parcel QR badge upon arrival.';
@@ -380,7 +385,10 @@ export default function HomePage() {
           {activeView === 'reception' && (
             <ReceptionView
               parcels={parcels}
-              onOpenRegister={() => setIsRegisterOpen(true)}
+              onOpenRegister={(prefill) => {
+                setRegisterPrefill(prefill);
+                setIsRegisterOpen(true);
+              }}
             />
           )}
 
@@ -402,9 +410,14 @@ export default function HomePage() {
       {/* Modals */}
       <RegisterParcelModal
         isOpen={isRegisterOpen}
-        onClose={() => setIsRegisterOpen(false)}
+        onClose={() => {
+          setIsRegisterOpen(false);
+          setRegisterPrefill(undefined);
+        }}
         onRegister={handleRegisterParcel}
         existingParcels={parcels}
+        initialCourier={registerPrefill?.courier}
+        initialTrackingNumber={registerPrefill?.trackingNumber}
       />
 
       <ScheduleSlotModal
