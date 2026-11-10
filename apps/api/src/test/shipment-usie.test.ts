@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import crypto from 'crypto';
 import {
   ShipmentExternalStatus,
@@ -12,6 +12,9 @@ import { AftershipAdapter } from '../integrations/tracking/aftership.adapter';
 import { ShiprocketAdapter } from '../integrations/tracking/shiprocket.adapter';
 import { GmailParser } from '../integrations/gmail/gmail.parser';
 import { ShipmentNormalizer } from '../modules/shipments/shipment-normalizer';
+import { ShipmentMatcher } from '../modules/shipments/shipment-matcher';
+import { ShipmentService } from '../modules/shipments/shipment.service';
+import { prisma } from '../lib/prisma';
 
 describe('Live Shipment Integration Architecture (USIE)', () => {
   describe('1. Tracking Provider Adapters & Webhook Security', () => {
@@ -187,5 +190,106 @@ describe('Live Shipment Integration Architecture (USIE)', () => {
       expect(parsed.trackingNumber).toBe('140928192019');
     });
   });
+
+  describe('5. Cross-Resident Conflict Detection & Invariant Protection (§10 & §14)', () => {
+    beforeEach(() => {
+      vi.restoreAllMocks();
+    });
+
+    it('returns EXACT match when tracking belongs to the same resident', async () => {
+      vi.spyOn(prisma.shipment, 'findFirst').mockResolvedValueOnce({
+        id: 'shipment-100',
+        residentId: 'resident-user-1',
+        societyId: 'society-a',
+        trackingNumber: '140928192019',
+      } as any);
+
+      const result = await ShipmentMatcher.findMatch({
+        societyId: 'society-a',
+        trackingNumber: '140928192019',
+        carrierCode: 'DELHIVERY',
+        residentId: 'resident-user-1',
+      });
+
+      expect(result.outcome).toBe('EXACT');
+      expect(result.matchedShipmentId).toBe('shipment-100');
+    });
+
+    it('detects CONFLICT when another resident enters an already registered tracking number', async () => {
+      vi.spyOn(prisma.shipment, 'findFirst').mockResolvedValueOnce({
+        id: 'shipment-100',
+        residentId: 'resident-user-1', // Belongs to Resident 1
+        societyId: 'society-a',
+        trackingNumber: '140928192019',
+      } as any);
+
+      const result = await ShipmentMatcher.findMatch({
+        societyId: 'society-a',
+        trackingNumber: '140928192019',
+        carrierCode: 'DELHIVERY',
+        residentId: 'resident-user-2', // Resident 2 attempts to register same tracking
+      });
+
+      expect(result.outcome).toBe('CONFLICT');
+      expect(result.reason).toContain('already registered to another resident');
+    });
+
+    it('detects CONFLICT when another resident enters an already registered order reference', async () => {
+      // First findFirst on tracking number returns null
+      vi.spyOn(prisma.shipment, 'findFirst')
+        .mockResolvedValueOnce(null)
+        // Second findFirst on orderReference returns shipment belonging to Resident 1
+        .mockResolvedValueOnce({
+          id: 'shipment-101',
+          residentId: 'resident-user-1',
+          societyId: 'society-a',
+          orderReference: 'AMZ-991823',
+        } as any);
+
+      const result = await ShipmentMatcher.findMatch({
+        societyId: 'society-a',
+        trackingNumber: '9988776655',
+        carrierCode: 'DELHIVERY',
+        orderReference: 'AMZ-991823',
+        residentId: 'resident-user-2',
+      });
+
+      expect(result.outcome).toBe('CONFLICT');
+      expect(result.reason).toContain('Order reference is already registered');
+    });
+
+    it('rejects manual shipment entry when tracking number has fewer than 4 alphanumeric characters', async () => {
+      await expect(
+        ShipmentService.createManualShipment('society-a', 'resident-user-1', {
+          trackingNumber: ' -# ',
+          carrierCode: 'DELHIVERY',
+        })
+      ).rejects.toThrow(/at least 4 alphanumeric characters/);
+    });
+
+    it('throws CONFLICT error (HTTP 409) when creating manual shipment colliding with another resident', async () => {
+      vi.spyOn(prisma.unitMembership, 'findFirst').mockResolvedValueOnce({
+        id: 'unit-member-1',
+        userId: 'resident-user-2',
+        unitId: 'unit-102',
+        status: 'ACTIVE',
+      } as any);
+
+      vi.spyOn(ShipmentMatcher, 'findMatch').mockResolvedValueOnce({
+        outcome: 'CONFLICT',
+        matchedShipmentId: 'shipment-100',
+        confidence: 0.5,
+        reason: 'Tracking number is already registered to another resident in this society',
+      });
+
+      await expect(
+        ShipmentService.createManualShipment('society-a', 'resident-user-2', {
+          trackingNumber: '140928192019',
+          carrierCode: 'DELHIVERY',
+        })
+      ).rejects.toThrow(/already registered to another resident/);
+    });
+  });
 });
+
 

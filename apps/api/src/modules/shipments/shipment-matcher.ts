@@ -1,7 +1,7 @@
 import { prisma } from '../../lib/prisma';
 import { ShipmentNormalizer } from './shipment-normalizer';
 
-export type MatchOutcome = 'EXACT' | 'HIGH_CONFIDENCE' | 'AMBIGUOUS' | 'NEW';
+export type MatchOutcome = 'EXACT' | 'HIGH_CONFIDENCE' | 'AMBIGUOUS' | 'NEW' | 'CONFLICT';
 
 export interface MatchResult {
   outcome: MatchOutcome;
@@ -34,6 +34,16 @@ export class ShipmentMatcher {
     });
 
     if (exact) {
+      // Cross-resident conflict protection (§10 & §14)
+      if (params.residentId && exact.residentId !== params.residentId) {
+        return {
+          outcome: 'CONFLICT',
+          matchedShipmentId: exact.id,
+          confidence: 0.5,
+          reason: 'Tracking number is already registered to another resident in this society',
+        };
+      }
+
       return {
         outcome: 'EXACT',
         matchedShipmentId: exact.id,
@@ -52,6 +62,15 @@ export class ShipmentMatcher {
       });
 
       if (orderMatch) {
+        if (params.residentId && orderMatch.residentId !== params.residentId) {
+          return {
+            outcome: 'CONFLICT',
+            matchedShipmentId: orderMatch.id,
+            confidence: 0.5,
+            reason: 'Order reference is already registered to another resident in this society',
+          };
+        }
+
         return {
           outcome: 'HIGH_CONFIDENCE',
           matchedShipmentId: orderMatch.id,
