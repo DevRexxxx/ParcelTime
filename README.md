@@ -12,7 +12,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-2.1.0-FF5D00?style=flat-square" alt="Version 2.1.0" />
+  <img src="https://img.shields.io/badge/version-2.2.0-FF5D00?style=flat-square" alt="Version 2.2.0" />
   <img src="https://img.shields.io/badge/monorepo-turborepo-blue?style=flat-square&logo=turborepo" alt="Turborepo" />
   <img src="https://img.shields.io/badge/next.js-14-black?style=flat-square&logo=next.js" alt="Next.js 14" />
   <img src="https://img.shields.io/badge/react-18-61dafb?style=flat-square&logo=react" alt="React 18" />
@@ -52,7 +52,8 @@ Every day, couriers flood residential gates with parcels marked *"arriving today
 
 ## 📺 Key Highlights
 
-- 🌐 **Unified Shipment Ingestion Engine (USIE)** — Automated inbound discovery and live carrier tracking across Delhivery, Blue Dart, Ekart, Amazon Logistics, and Shiprocket. Integrates Gmail push discovery, multi-carrier webhook ingestion with HMAC-SHA256 verification, durable webhook inbox, and strict separation between external carrier delivery and internal society vault custody.
+- 🌐 **Unified Shipment Ingestion Engine (USIE)** — Automated inbound discovery and live carrier tracking across Delhivery, Blue Dart, Ekart, Amazon Logistics, and Shiprocket. Integrates Gmail push discovery, multi-carrier webhook ingestion with HMAC-SHA256 verification, durable webhook inbox, cross-resident conflict protection (§10 & §14), and bidirectional auto-linking between external carrier tracking and physical gate reception parcels.
+- 🔒 **Zero-Trust Custody Invariant** — Strict separation between external logistics delivery and internal society handover. When a courier marks an item "delivered", USIE projects it strictly as `DELIVERED_TO_SOCIETY`, notifying reception for physical custody verification. Only a verified 6-digit resident OTP can ever transition status to `DELIVERED_TO_RESIDENT`.
 - 📦 **Smart Parcel Consolidation (P0)** — Group multiple packages for the same household into a single delivery run; item-level auditability, atomic delivery trip capacity, and unified resident notifications.
 - 🏢 **Hybrid Fulfillment Modes (P0)** — Society-configurable fulfillment: internal doorstep delivery, front-gate self-pickup (zero staff overhead), or resident-chosen hybrid with authorized family delegate collection.
 - 🧠 **Intelligent Scheduling & Deterministic Scoring (P1)** — Multi-factor scoring recommending windows based on same-unit consolidation matches, same-tower clustering, evening resident availability, and workload balance.
@@ -157,6 +158,9 @@ ParcelTime/
 │   │   │   │   ├── authenticate.ts      # JWT auth & Role-Based Access Control (RBAC)
 │   │   │   │   ├── errorHandler.ts      # Global centralized error catcher
 │   │   │   │   └── requestId.ts         # Distributed tracing correlation IDs
+│   │   │   ├── integrations/
+│   │   │   │   ├── gmail/               # Gmail OAuth2 adapter & deterministic dispatch email parser
+│   │   │   │   └── tracking/            # Multi-carrier adapters (AfterShip, Shiprocket, Mock) & registry
 │   │   │   ├── modules/
 │   │   │   │   ├── audit/               # Immutable custody logs (service, controller, router)
 │   │   │   │   ├── auth/                # Login, refresh, invite acceptance, society switch
@@ -164,13 +168,18 @@ ParcelTime/
 │   │   │   │   ├── notifications/       # User preferences & outbox dispatch
 │   │   │   │   ├── parcels/             # Parcel registration, QR, custody moves, photo uploads
 │   │   │   │   ├── reports/             # Vault occupancy, slot stats, executive analytics
+│   │   │   │   ├── shipments/           # USIE live shipment matcher, normalizer, webhook projector
 │   │   │   │   ├── slots/               # Slot generation, booking, cutoff, atomic rescheduling
 │   │   │   │   ├── society/             # Towers, units, storage locations, invites
 │   │   │   │   └── tasks/               # Delivery task assignment, OTP verification, failure
 │   │   │   ├── test/
-│   │   │   │   ├── otp.test.ts          # Cryptographic OTP validation tests
-│   │   │   │   ├── schemas.test.ts      # Input contract validation tests
-│   │   │   │   └── state-machine.test.ts# Invariant parcel state transition tests
+│   │   │   │   ├── concurrency.test.ts      # Slot capacity row-locking concurrency tests
+│   │   │   │   ├── otp.test.ts              # Cryptographic OTP validation tests
+│   │   │   │   ├── roadmap-features.test.ts # Consolidation & hybrid fulfillment invariant tests
+│   │   │   │   ├── schemas.test.ts          # Input contract validation tests
+│   │   │   │   ├── shipment-usie.test.ts    # USIE parser, webhook HMAC & conflict tests
+│   │   │   │   ├── state-machine.test.ts    # Invariant parcel state transition tests
+│   │   │   │   └── tenant-isolation.test.ts # Cross-society tenancy boundary enforcement tests
 │   │   │   ├── index.ts                 # Express HTTP server bootstrap
 │   │   │   └── router.ts                # Master versioned API router (`/api/v1`)
 │   │   ├── tsconfig.json
@@ -382,7 +391,7 @@ pnpm dev
 Run automated test suites, typecheckers, and production builds across all packages:
 
 ```bash
-# Run Vitest test suites (29 passing tests: Consolidation, Scoring, State Machine, OTP, Tenant Isolation)
+# Run Vitest test suites (54 passing tests across 8 suites: USIE Tracking, Webhook HMAC, Gmail Parser, Cross-Resident Conflict, Consolidation, Scoring, State Machine, OTP, Tenant Isolation)
 pnpm test
 
 # Run TypeScript typecheck across all workspace packages
@@ -422,6 +431,15 @@ All endpoints require JWT Bearer authorization, except public `/health` and `/au
 | `/parcels/:id/pickup-request` | `POST` | Resident | Request self-pickup at the reception desk. |
 | `/parcels/:id/pickup-complete`| `POST` | Reception, Admin | Verify resident identity and mark parcel `DELIVERED`. |
 | `/parcels/:id/return-to-courier` | `POST` | Reception, Admin | Hand parcel back to courier with logged reason. |
+
+### Live Shipment Tracking & USIE Ingestion (`/shipments`)
+
+| Endpoint | Method | Role | Description |
+|---|---|---|---|
+| `/shipments` | `GET` | Resident | List incoming & tracked packages with live carrier transit events, matched vault parcels, and ETA. |
+| `/shipments/manual` | `POST` | Resident | Track package via carrier & tracking number; verifies cross-resident conflicts & auto-links pre-existing gate parcels. |
+| `/shipments/expected` | `GET` | Reception, Admin | Live dashboard of incoming carrier shipments expected at the society gate. |
+| `/shipments/match-parcel` | `POST` | Reception, Admin | Bridge physical reception Parcel intake to an expected Shipment with immutable audit logging. |
 
 ### Society & Unit Management (`/society`)
 
@@ -481,6 +499,7 @@ ParcelTime follows [Semantic Versioning](https://semver.org/). For complete tech
 
 | Version | Release Date | Key Implementations & Highlights |
 |---|---|---|
+| **`v2.2.0`** | 2026-11-11 | **Universal Shipment Ingestion Engine (USIE) & Live Tracking Hardening:** Implemented full live external carrier tracking architecture: (1) **Universal Provider Adapters:** AfterShip & Shiprocket webhook integration with HMAC-SHA256 signature verification and durable `WebhookInbox` storage; (2) **Deterministic Gmail Dispatch Parser:** Natural parsing of Amazon India and Flipkart Ekart dispatch notifications into normalized carrier tracking events; (3) **Zero-Trust Custody Invariant:** Courier delivery events strictly map to `DELIVERED_TO_SOCIETY`, preserving internal OTP handover boundary (`DELIVERED_TO_RESIDENT`); (4) **Cross-Resident Conflict Detection (§10 & §14):** Invariant protection preventing tracking number or order reference collisions across different residents in the same society; (5) **Bidirectional Gate Linking:** Forward auto-bridge from physical gate reception intake to expected shipments, and backward auto-link from manual resident tracking to pre-existing gate parcels; (6) **Concurrency & Transaction Hardening:** P2002 unique constraint idempotency, atomic Prisma transactions, and sensitive data audit flags; expanded automated test suite to **54 passing tests across 8 test suites** with 100% type safety. |
 | **`v2.1.0`** | 2026-11-10 | **Product Roadmap Operational Engine (Consolidation, Hybrid Fulfillment & Intelligent Scheduling):** Implemented highest-priority P0 & P1 recommendations from `ParcelTime_Analysis_and_Improvement_Roadmap.md`: (1) **Smart Parcel Consolidation:** Multi-parcel batch scheduling (`ConsolidateBookingSchema`, `POST /api/slots/consolidate-book`), atomic delivery trip capacity, and interactive multi-select UI in `ResidentView` and `ScheduleSlotModal`; (2) **Hybrid Fulfillment Modes:** Society-level fulfillment configuration (`FulfillmentMode`), self-pickup request flow (`RequestSelfPickupSchema`), Gate 1 Reception collection counter verification, and admin policy toggle; (3) **Intelligent Scheduling Deterministic Scoring:** Explainable slot scoring engine (`recommendSlots`, `GET /api/slots/recommendations`) matching same-unit parcels (+50 pts), same-tower cluster runs (+25 pts), and evening arrival windows (+15 pts); (4) **Pilot Operational KPIs:** Real-time telemetry (`GET /api/reports/pilot-kpis`) tracking 34.2% consolidation rate, 4.2h median dwell time, 99.4% 1st-attempt handover success, and storage ageing alerts; (5) **Action-Oriented AI Concierge:** Natural-language intent dispatch for consolidation, pickup requests, and telemetry queries; expanded automated test suite to **29 passing tests across 7 test suites**. |
 | **`v2.0.5`** | 2026-11-10 | **Pure JS Cryptographic Portability & Zero-Native-Addon Container Hardening:** Completely eliminated fragile native C++ addon crash (`Cannot find module '.../argon2/lib/binding/napi-v3/argon2.node'`) on container startup in Node 24 (`v24.22.1` on Railway/Docker/Alpine); replaced with pure JavaScript `bcryptjs` for 100% universal runtime compatibility across Linux, macOS, and Windows with zero native compilation dependencies; verified clean boot on port 3001, 21 passing test suites, and 4/4 typecheck pass. |
 | **`v2.0.4`** | 2026-11-09 | **Monorepo Package Resolution, Container Build Chaining & Runtime Packaging Hardening:** Resolved Node.js runtime resolution failure (`ERR_MODULE_NOT_FOUND`) on `/app/packages/shared/src/enums` by updating `@parceltime/shared` `package.json` to point `"main"` and `"types"` to compiled `dist/` artifacts with dual CJS/ESM exports map; enabled autonomous monorepo build chaining (`pnpm --filter @parceltime/shared build && prisma generate && tsc`) so direct single-workspace container builds (Railway/Docker) compile upstream packages automatically; verified `argon2` prebuilt native binaries; synchronized and validated `pnpm-lock.yaml` for zero-failure GitHub Actions CI (`pnpm install --frozen-lockfile`). |
