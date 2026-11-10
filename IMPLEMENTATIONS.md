@@ -3,6 +3,7 @@
 > **Document Version:** 2.0.5  
 > **Last Synchronized:** 2026-11-10  
 > **Repository:** [DevRexxxx/ParcelTime](https://github.com/DevRexxxx/ParcelTime.git)  
+> **Live Production Deployment:** [https://parceltime.up.railway.app](https://parceltime.up.railway.app/)  
 > **Compliance:** Technical Requirements Document (TRD), Product Requirements Document (PRD), System Design Rules, 2030 Spatial Design System, and UI Fix and Build Spec (v2).
 
 ---

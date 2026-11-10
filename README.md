@@ -30,6 +30,15 @@
   <img src="https://img.shields.io/badge/framer--motion-11-black?style=flat-square&logo=framer" alt="Framer Motion" />
 </p>
 
+<p align="center">
+  <a href="https://parceltime.up.railway.app/" target="_blank">
+    <img src="https://img.shields.io/badge/🚀_Live_Production_Demo-https%3A%2F%2Fparceltime.up.railway.app-FF5D00?style=for-the-badge&logo=railway&logoColor=white" alt="Live Demo" />
+  </a>
+</p>
+
+> 🌐 **Live Production Deployment:** [https://parceltime.up.railway.app](https://parceltime.up.railway.app/)  
+> 📦 **Monorepo Architecture:** Turborepo + Next.js 14 (2030 Spatial UI) + Express 4 + Prisma ORM + PostgreSQL
+
 ---
 
 ## ✨ Overview
@@ -307,6 +316,13 @@ The user interface follows the **2030 Spatial Design System** — blending the s
 
 ## 🔧 Installation & Development
 
+### 🌐 Live Production Deployment
+
+The web application is deployed and publicly accessible on Railway:
+- **Production URL:** [https://parceltime.up.railway.app](https://parceltime.up.railway.app/)
+- **Infrastructure:** Railway Platform (`up.railway.app`)
+- **Port:** `3000` (Next.js 14 App Router)
+
 ### Prerequisites
 
 - [Node.js](https://nodejs.org/) (v18.18+ or v20+)
@@ -317,7 +333,7 @@ The user interface follows the **2030 Spatial Design System** — blending the s
 
 ```bash
 # Clone the repository
-git clone https://github.com/YourOrg/ParcelTime.git
+git clone https://github.com/DevRexxxx/ParcelTime.git
 cd ParcelTime
 
 # Install monorepo dependencies
