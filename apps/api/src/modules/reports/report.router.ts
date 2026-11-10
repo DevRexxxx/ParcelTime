@@ -23,3 +23,25 @@ reportRouter.get(
   controller.getExecutivePerformance
 );
 
+reportRouter.get(
+  '/pilot-kpis',
+  requireRoles(
+    UserRole.SOCIETY_ADMIN,
+    UserRole.RECEPTION,
+    UserRole.PLATFORM_ADMIN,
+    UserRole.RESIDENT
+  ) as any,
+  controller.getPilotKpis
+);
+
+reportRouter.get(
+  '/ageing-parcels',
+  requireRoles(
+    UserRole.SOCIETY_ADMIN,
+    UserRole.RECEPTION,
+    UserRole.PLATFORM_ADMIN
+  ) as any,
+  controller.getAgeingParcels
+);
+
+

@@ -134,3 +134,10 @@ export enum SocietyStatus {
   INACTIVE = 'INACTIVE',
   SETUP = 'SETUP',
 }
+
+export enum FulfillmentMode {
+  HYBRID = 'HYBRID',
+  INTERNAL_DELIVERY = 'INTERNAL_DELIVERY',
+  SELF_PICKUP = 'SELF_PICKUP',
+}
+

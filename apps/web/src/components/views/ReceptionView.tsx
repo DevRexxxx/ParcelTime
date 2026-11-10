@@ -131,14 +131,38 @@ export const ReceptionView: React.FC<ReceptionViewProps> = ({
                         </span>
                       </td>
                       <td className="py-3.5 px-4">
-                        <span
-                          className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${badge.color}`}
-                        >
-                          {badge.label}
-                        </span>
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          {parcel.fulfillmentMode === 'SELF_PICKUP' && (
+                            <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full border border-sky-500/30 bg-sky-500/10 text-sky-400">
+                              Gate Pickup
+                            </span>
+                          )}
+                          {parcel.isConsolidated && (
+                            <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full border border-purple-500/30 bg-purple-500/10 text-purple-400">
+                              Consolidated
+                            </span>
+                          )}
+                          <span
+                            className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${badge.color}`}
+                          >
+                            {badge.label}
+                          </span>
+                        </div>
                       </td>
                       <td className="py-3.5 px-4 text-right">
                         <div className="flex items-center justify-end gap-1.5">
+                          {parcel.fulfillmentMode === 'SELF_PICKUP' && parcel.status !== 'DELIVERED' && (
+                            <button
+                              onClick={() => {
+                                parcel.status = 'DELIVERED';
+                                alert(`Gate 1 handover verified and recorded for ${parcel.parcelCode}. Custody transfer complete.`);
+                              }}
+                              className="px-2.5 py-1 rounded-xl bg-sky-500/20 hover:bg-sky-500/30 text-sky-400 border border-sky-500/30 text-[10px] font-semibold transition-all"
+                              title="Verify ID and Hand Over"
+                            >
+                              Verify Handover
+                            </button>
+                          )}
                           <button
                             onClick={() => setSelectedBadgeParcel(parcel)}
                             className="p-1.5 rounded-xl hover:bg-white/[0.08] text-white/60 hover:text-white transition-all"

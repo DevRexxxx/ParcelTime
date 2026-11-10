@@ -45,3 +45,31 @@ export async function getExecutivePerformance(
   }
 }
 
+export async function getPilotKpis(
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction
+) {
+  try {
+    const result = await service.getPilotKpis(req.user!.societyId);
+    res.json(result);
+  } catch (e) {
+    next(e);
+  }
+}
+
+export async function getAgeingParcels(
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction
+) {
+  try {
+    const days = req.query.days ? parseInt(req.query.days as string, 10) : 3;
+    const result = await service.getAgeingParcels(req.user!.societyId, days);
+    res.json(result);
+  } catch (e) {
+    next(e);
+  }
+}
+
+

@@ -7,6 +7,8 @@ import {
   RescheduleSchema,
   UpdateSlotTemplateSchema,
   UpdateSlotInstanceSchema,
+  ConsolidateBookingSchema,
+  SlotRecommendationQuerySchema,
 } from '@parceltime/shared';
 
 export async function createTemplate(
@@ -147,5 +149,42 @@ export async function updateSlotInstance(
     next(e);
   }
 }
+
+export async function consolidateBooking(
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction
+) {
+  try {
+    const data = ConsolidateBookingSchema.parse(req.body);
+    const result = await service.consolidateAndBookSlots(
+      req.user!.societyId,
+      req.user!.userId,
+      data
+    );
+    res.status(201).json(result);
+  } catch (e) {
+    next(e);
+  }
+}
+
+export async function getRecommendations(
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction
+) {
+  try {
+    const query = SlotRecommendationQuerySchema.parse(req.query);
+    const recommendations = await service.recommendSlots(
+      req.user!.societyId,
+      query.unitId,
+      query.date
+    );
+    res.json(recommendations);
+  } catch (e) {
+    next(e);
+  }
+}
+
 
 

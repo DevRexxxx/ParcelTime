@@ -6,6 +6,7 @@ import {
   VerificationMethod,
   SlotInstanceStatus,
   NotificationCategory,
+  FulfillmentMode,
 } from './enums';
 
 // Auth schemas
@@ -54,6 +55,7 @@ export const UpdateSocietySettingsSchema = z.object({
   photoRequired: z.boolean().optional(),
   otpExpiryMinutes: z.number().int().min(1).max(60).optional(),
   maxFailedAttempts: z.number().int().min(1).max(10).optional(),
+  fulfillmentMode: z.nativeEnum(FulfillmentMode).optional(),
 });
 
 // Unit schemas
@@ -194,4 +196,35 @@ export const UpdateSlotInstanceSchema = z.object({
   capacity: z.number().int().min(0).max(1000).optional(),
   status: z.nativeEnum(SlotInstanceStatus).optional(),
 });
+
+// Smart Parcel Consolidation Schema (P0)
+export const ConsolidateBookingSchema = z.object({
+  parcelIds: z.array(z.string().uuid()).min(2, 'Must provide at least 2 parcels to consolidate').max(20),
+  slotInstanceId: z.string().uuid(),
+  deliveryNote: z.string().max(500).optional(),
+  idempotencyKey: z.string().min(1).max(100),
+});
+
+// Hybrid Fulfillment: Self-Pickup Request Schema (P0)
+export const RequestSelfPickupSchema = z.object({
+  parcelId: z.string().uuid(),
+  pickupNote: z.string().max(500).optional(),
+  authorizedReceiverName: z.string().max(100).optional(),
+  idempotencyKey: z.string().min(1).max(100),
+});
+
+// Intelligent Scheduling Recommendation Query Schema (P1)
+export const SlotRecommendationQuerySchema = z.object({
+  unitId: z.string().uuid(),
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+});
+
+// Damage / Dispute Reporting Schema (P1)
+export const ReportDamageDisputeSchema = z.object({
+  parcelId: z.string().uuid(),
+  description: z.string().min(5).max(1000),
+  photoRef: z.string().optional(),
+  idempotencyKey: z.string().min(1).max(100),
+});
+
 

@@ -11,6 +11,7 @@ import {
   AssignmentMode,
   PickupRequestStatus,
   OtpChallengeStatus,
+  FulfillmentMode,
 } from './enums';
 
 // API Error format
@@ -48,6 +49,7 @@ export interface SocietySettingsDto {
   otpExpiryMinutes: number;
   maxFailedAttempts: number;
   assignmentMode: AssignmentMode;
+  fulfillmentMode?: FulfillmentMode;
 }
 
 // User / Auth
@@ -243,3 +245,46 @@ export interface OtpResponse {
   expiresAt: string;
   attemptsRemaining: number;
 }
+
+// Smart Parcel Consolidation (Roadmap P0)
+export interface ConsolidatedBookingDto {
+  scheduleIds: string[];
+  taskIds: string[];
+  parcelIds: string[];
+  slotInstanceId: string;
+  deliveryDate: string;
+  deliveryWindow: string;
+  consolidatedCount: number;
+}
+
+// Intelligent Scheduling Recommendation (Roadmap P1)
+export interface SlotRecommendationDto {
+  slot: SlotInstanceDto;
+  score: number;
+  recommended: boolean;
+  reasons: string[];
+}
+
+// Hybrid Fulfillment: Self-Pickup Request (Roadmap P0)
+export interface SelfPickupRequestDto {
+  id: string;
+  parcelId: string;
+  requestedById: string;
+  status: PickupRequestStatus;
+  authorizedReceiverName?: string;
+  note?: string;
+  createdAt: string;
+}
+
+// Pilot Operational KPIs (Roadmap Section 10 & P1)
+export interface PilotKpisDto {
+  checkInTimeSecs: number;
+  avgStorageDwellHours: number;
+  firstAttemptSuccessRate: number;
+  consolidationRate: number;
+  disputeRatePer1000: number;
+  activeParcelsCount: number;
+  ageingParcelsCount: number;
+  totalParcelsCount: number;
+}
+

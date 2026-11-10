@@ -13,6 +13,21 @@ export const INITIAL_PARCELS: ParcelItem[] = [
     storageLocation: 'Gate 1 Vault - Shelf A',
     receivedAt: 'Today at 02:15 PM',
     notes: 'Fragile: Electronics package',
+    fulfillmentMode: 'INTERNAL_DELIVERY',
+  },
+  {
+    id: 'p-5',
+    parcelCode: 'PT-5519',
+    courier: 'Myntra Fashion',
+    trackingNumber: 'MYN-4918230',
+    unitNumber: '102',
+    tower: 'Tower A - Aspen',
+    recipientName: 'Priya Sharma',
+    status: 'RECEIVED',
+    storageLocation: 'Gate 1 Vault - Shelf B',
+    receivedAt: 'Today at 03:40 PM',
+    notes: 'Apparel box - eligible for consolidation',
+    fulfillmentMode: 'INTERNAL_DELIVERY',
   },
   {
     id: 'p-2',
@@ -27,6 +42,7 @@ export const INITIAL_PARCELS: ParcelItem[] = [
     receivedAt: 'Today at 11:30 AM',
     scheduledTime: 'Tomorrow, 09:00 - 11:00 AM',
     notes: 'Doorbell ring twice',
+    fulfillmentMode: 'INTERNAL_DELIVERY',
   },
   {
     id: 'p-3',
@@ -42,6 +58,7 @@ export const INITIAL_PARCELS: ParcelItem[] = [
     scheduledTime: 'Today, 18:30 - 20:30',
     otpCode: '482910',
     notes: 'Approaching Tower A with courier Rajesh Kumar',
+    fulfillmentMode: 'INTERNAL_DELIVERY',
   },
   {
     id: 'p-4',
@@ -55,6 +72,8 @@ export const INITIAL_PARCELS: ParcelItem[] = [
     storageLocation: 'Front Reception Counter',
     receivedAt: 'Yesterday at 04:20 PM',
     scheduledTime: 'Yesterday, 19:00',
+    fulfillmentMode: 'SELF_PICKUP',
+    authorizedReceiver: 'Priya Sharma (Self-Pickup at Gate 1)',
   },
 ];
 
@@ -68,6 +87,9 @@ export const INITIAL_SLOTS: SlotItem[] = [
     capacity: 15,
     bookedCount: 6,
     isAvailable: true,
+    score: 148,
+    recommended: true,
+    recommendationReason: 'Consolidates with PT-9104 delivery to Unit A-102 (Single Run)',
   },
   {
     id: 'slot-2',
@@ -78,6 +100,9 @@ export const INITIAL_SLOTS: SlotItem[] = [
     capacity: 20,
     bookedCount: 14,
     isAvailable: true,
+    score: 55,
+    recommended: false,
+    recommendationReason: 'Normal afternoon availability',
   },
   {
     id: 'slot-3',
@@ -88,6 +113,9 @@ export const INITIAL_SLOTS: SlotItem[] = [
     capacity: 25,
     bookedCount: 22,
     isAvailable: true,
+    score: 75,
+    recommended: false,
+    recommendationReason: 'Prime evening arrival window when residents are home',
   },
   {
     id: 'slot-4',
@@ -98,6 +126,9 @@ export const INITIAL_SLOTS: SlotItem[] = [
     capacity: 10,
     bookedCount: 10,
     isAvailable: false,
+    score: 0,
+    recommended: false,
+    recommendationReason: 'Window fully booked',
   },
 ];
 

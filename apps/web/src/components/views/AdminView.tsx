@@ -201,10 +201,27 @@ export const AdminView: React.FC = () => {
             <div className="p-6 rounded-3xl glass-panel border border-white/[0.08] space-y-4">
               <h4 className="text-sm font-bold text-white flex items-center gap-2">
                 <Sliders className="w-4 h-4 text-primary" />
-                <span>Scheduling Governance</span>
+                <span>Scheduling & Fulfillment Governance</span>
               </h4>
 
               <div className="space-y-3 text-xs">
+                <div>
+                  <label className="text-white/60 font-medium block mb-1">
+                    Society Fulfillment Mode (Roadmap P0)
+                  </label>
+                  <select
+                    defaultValue="HYBRID"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-black/60 border border-white/10 text-white outline-none focus:border-primary/50"
+                  >
+                    <option value="HYBRID">Hybrid Mode: Resident Chooses (Door Delivery or Reception Pickup)</option>
+                    <option value="SELF_PICKUP">Reception Self-Pickup Only (No Dedicated Delivery Staff Needed)</option>
+                    <option value="INTERNAL_DELIVERY">Internal Delivery Only (Mandatory Doorstep Handover)</option>
+                  </select>
+                  <span className="text-[10px] text-primary/80 mt-1 block">
+                    Controls whether residents can request front-gate pickup, scheduled internal runs, or both.
+                  </span>
+                </div>
+
                 <div>
                   <label className="text-white/60 font-medium block mb-1">Slot Cutoff Window</label>
                   <input
@@ -392,26 +409,43 @@ export const AdminView: React.FC = () => {
               </button>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
-              <div className="p-3.5 rounded-2xl bg-white/[0.03] border border-white/[0.05]">
-                <div className="text-[10px] text-white/50 uppercase">Total Parcels Logged</div>
-                <div className="text-lg font-bold text-white mt-1">1,428</div>
-                <div className="text-[10px] text-emerald-400 font-medium">This month</div>
+            <div className="space-y-4 pt-2">
+              <div className="text-xs font-semibold text-white/70 flex items-center justify-between">
+                <span>Pilot Operational KPIs (Roadmap Section 10)</span>
+                <span className="text-[10px] text-primary">Live Pilot Society Telemetry</span>
               </div>
-              <div className="p-3.5 rounded-2xl bg-white/[0.03] border border-white/[0.05]">
-                <div className="text-[10px] text-white/50 uppercase">On-Time Handover</div>
-                <div className="text-lg font-bold text-white mt-1">99.4%</div>
-                <div className="text-[10px] text-emerald-400 font-medium">+0.3% vs last week</div>
-              </div>
-              <div className="p-3.5 rounded-2xl bg-white/[0.03] border border-white/[0.05]">
-                <div className="text-[10px] text-white/50 uppercase">Avg Registration</div>
-                <div className="text-lg font-bold text-white mt-1">21 sec</div>
-                <div className="text-[10px] text-primary font-medium">Target: &lt; 30 sec</div>
-              </div>
-              <div className="p-3.5 rounded-2xl bg-white/[0.03] border border-white/[0.05]">
-                <div className="text-[10px] text-white/50 uppercase">Unclaimed Overdue</div>
-                <div className="text-lg font-bold text-white mt-1">0</div>
-                <div className="text-[10px] text-emerald-400 font-medium">0 active alerts</div>
+
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
+                <div className="p-3.5 rounded-2xl bg-white/[0.03] border border-white/[0.05]">
+                  <div className="text-[10px] text-white/50 uppercase">Total Parcels</div>
+                  <div className="text-lg font-bold text-white mt-1">1,428</div>
+                  <div className="text-[10px] text-emerald-400 font-medium">Logged this month</div>
+                </div>
+                <div className="p-3.5 rounded-2xl bg-primary/[0.04] border border-primary/20">
+                  <div className="text-[10px] text-primary uppercase font-semibold">Consolidation Rate</div>
+                  <div className="text-lg font-bold text-primary mt-1">34.2%</div>
+                  <div className="text-[10px] text-primary/80 font-medium">Multi-parcel runs</div>
+                </div>
+                <div className="p-3.5 rounded-2xl bg-white/[0.03] border border-white/[0.05]">
+                  <div className="text-[10px] text-white/50 uppercase">Storage Dwell Time</div>
+                  <div className="text-lg font-bold text-white mt-1">4.2 hrs</div>
+                  <div className="text-[10px] text-emerald-400 font-medium">Median to handover</div>
+                </div>
+                <div className="p-3.5 rounded-2xl bg-white/[0.03] border border-white/[0.05]">
+                  <div className="text-[10px] text-white/50 uppercase">1st-Attempt Handover</div>
+                  <div className="text-lg font-bold text-white mt-1">99.4%</div>
+                  <div className="text-[10px] text-emerald-400 font-medium">OTP verified</div>
+                </div>
+                <div className="p-3.5 rounded-2xl bg-white/[0.03] border border-white/[0.05]">
+                  <div className="text-[10px] text-white/50 uppercase">Intake Speed</div>
+                  <div className="text-lg font-bold text-white mt-1">38 sec</div>
+                  <div className="text-[10px] text-primary font-medium">Per parcel intake</div>
+                </div>
+                <div className="p-3.5 rounded-2xl bg-white/[0.03] border border-white/[0.05]">
+                  <div className="text-[10px] text-white/50 uppercase">Dispute Frequency</div>
+                  <div className="text-lg font-bold text-white mt-1">1.2 / 1k</div>
+                  <div className="text-[10px] text-emerald-400 font-medium">Low dispute rate</div>
+                </div>
               </div>
             </div>
           </div>

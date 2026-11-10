@@ -29,6 +29,7 @@ export default function HomePage() {
   // Modals
   const [isRegisterOpen, setIsRegisterOpen] = useState(false);
   const [selectedParcelForSchedule, setSelectedParcelForSchedule] = useState<ParcelItem | null>(null);
+  const [parcelsForConsolidation, setParcelsForConsolidation] = useState<ParcelItem[] | null>(null);
   const [selectedParcelForOtp, setSelectedParcelForOtp] = useState<ParcelItem | null>(null);
 
   // Chat conversation
@@ -76,6 +77,19 @@ export default function HomePage() {
         } else {
           replyContent = 'You currently have no packages out for delivery requiring a delivery code.';
         }
+      } else if (lower.includes('consolidat') || lower.includes('bundle') || lower.includes('all packages')) {
+        const received = parcels.filter((p) => p.status === 'RECEIVED');
+        if (received.length >= 2) {
+          replyContent = `Found **${received.length} pending packages** for Unit A-102 (${received.map((p) => p.parcelCode).join(', ')}). Using deterministic AI scheduling, I recommend the **Morning Window (09:00 - 11:00 AM)** because you already have PT-9104 arriving then — consolidating delivers all packages together in a single run!`;
+          actionCard = {
+            type: 'SLOT_PICKER',
+            data: slots.filter((s) => s.isAvailable),
+          };
+        } else {
+          replyContent = 'You currently have 1 pending package. When additional packages arrive at Gate 1, they will be auto-clustered into a consolidated batch.';
+        }
+      } else if (lower.includes('kpi') || lower.includes('dwell') || lower.includes('metric') || lower.includes('telemetry')) {
+        replyContent = `📊 **Society Pilot Operational KPIs (Roadmap Section 10):**\n- **Consolidation Rate:** 34.2% of multi-parcel deliveries bundled into single runs\n- **Median Storage Dwell Time:** 4.2 hours\n- **First-Attempt Handover Rate:** 99.4% (OTP verified)\n- **Intake Speed:** 38 seconds per parcel\n- **Dispute Frequency:** 1.2 per 1,000 handovers.`;
       } else if (lower.includes('schedule') || lower.includes('book') || lower.includes('slot')) {
         replyContent =
           'I found your pending **Amazon Logistics** parcel (PT-8942) in Shelf A. Here are the open delivery windows for tomorrow:';
@@ -142,6 +156,62 @@ export default function HomePage() {
     setSlots((prev) =>
       prev.map((s) => (s.id === slot.id ? { ...s, bookedCount: s.bookedCount + 1 } : s))
     );
+  };
+
+  const handleConfirmConsolidatedSchedule = (parcelIds: string[], slot: SlotItem, note?: string) => {
+    setParcels((prev) =>
+      prev.map((p) =>
+        parcelIds.includes(p.id)
+          ? {
+              ...p,
+              status: 'SCHEDULED',
+              scheduledTime: `${slot.date}, ${slot.startTime} - ${slot.endTime}`,
+              isConsolidated: true,
+              consolidatedWith: parcelIds.filter((id) => id !== p.id),
+              notes: note || p.notes,
+            }
+          : p
+      )
+    );
+    // Consolidating multiple parcels into 1 delivery run consumes 1 slot booking!
+    setSlots((prev) =>
+      prev.map((s) => (s.id === slot.id ? { ...s, bookedCount: s.bookedCount + 1 } : s))
+    );
+
+    const targetParcels = parcels.filter((p) => parcelIds.includes(p.id));
+    const codes = targetParcels.map((p) => p.parcelCode).join(', ');
+
+    const confirmMsg: ChatMessage = {
+      id: `asst-consol-${Date.now()}`,
+      sender: 'assistant',
+      content: `📦✨ **Consolidated Run Confirmed!** Your ${parcelIds.length} parcels (${codes}) are grouped into a single delivery run for **${slot.label} (${slot.date}, ${slot.startTime} - ${slot.endTime})**. The executive will deliver all items in one doorstep visit.`,
+      timestamp: 'Just now',
+    };
+    setMessages((prev) => [...prev, confirmMsg]);
+  };
+
+  const handleRequestSelfPickup = (parcelId: string, receiverName?: string) => {
+    setParcels((prev) =>
+      prev.map((p) =>
+        p.id === parcelId
+          ? {
+              ...p,
+              fulfillmentMode: 'SELF_PICKUP',
+              storageLocation: 'Gate 1 Front Desk (Ready for Pickup)',
+              authorizedReceiver: receiverName || 'Resident (Self)',
+            }
+          : p
+      )
+    );
+
+    const targetParcel = parcels.find((p) => p.id === parcelId);
+    const pickupMsg: ChatMessage = {
+      id: `asst-pickup-${Date.now()}`,
+      sender: 'assistant',
+      content: `🏢 **Gate 1 Self-Pickup Confirmed:** Parcel **${targetParcel?.courier} (${targetParcel?.parcelCode})** is registered for front-desk collection. Authorized collector: **${receiverName || 'Resident'}**. Present your QR badge or photo ID at Gate 1 security.`,
+      timestamp: 'Just now',
+    };
+    setMessages((prev) => [...prev, pickupMsg]);
   };
 
   const handleRegisterParcel = (newParcelData: Partial<ParcelItem>) => {
@@ -294,8 +364,16 @@ export default function HomePage() {
           {activeView === 'resident' && (
             <ResidentView
               parcels={parcels}
-              onOpenSchedule={(parcel) => setSelectedParcelForSchedule(parcel)}
+              onOpenSchedule={(parcel) => {
+                setParcelsForConsolidation(null);
+                setSelectedParcelForSchedule(parcel);
+              }}
+              onOpenConsolidatedSchedule={(bundle) => {
+                setParcelsForConsolidation(bundle);
+                setSelectedParcelForSchedule(bundle[0]);
+              }}
               onOpenOtp={(parcel) => setSelectedParcelForOtp(parcel)}
+              onRequestSelfPickup={handleRequestSelfPickup}
             />
           )}
 
@@ -331,10 +409,15 @@ export default function HomePage() {
 
       <ScheduleSlotModal
         isOpen={selectedParcelForSchedule !== null}
-        onClose={() => setSelectedParcelForSchedule(null)}
+        onClose={() => {
+          setSelectedParcelForSchedule(null);
+          setParcelsForConsolidation(null);
+        }}
         parcel={selectedParcelForSchedule}
+        parcelsToConsolidate={parcelsForConsolidation || undefined}
         slots={slots}
         onConfirm={handleConfirmSchedule}
+        onConfirmConsolidated={handleConfirmConsolidatedSchedule}
       />
 
       <VerifyOtpModal

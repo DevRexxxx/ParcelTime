@@ -19,6 +19,7 @@ slotRouter.patch(
 
 slotRouter.get('/available', controller.listAvailableSlots);
 slotRouter.get('/availability', controller.listAvailableSlots);
+slotRouter.get('/recommendations', controller.getRecommendations);
 
 slotRouter.patch(
   '/instances/:id',
@@ -31,6 +32,7 @@ slotRouter.patch(
   controller.updateSlotInstance
 );
 
+slotRouter.post('/consolidate-book', controller.consolidateBooking);
 slotRouter.post('/:parcelId/book', controller.bookSlot);
 slotRouter.post('/:parcelId/reschedule', controller.rescheduleSlot);
 slotRouter.post('/:parcelId/cancel', controller.cancelSchedule);

@@ -9,6 +9,9 @@ import {
   SlotTemplateSchema,
   BookSlotSchema,
   RescheduleSchema,
+  ConsolidateBookingSchema,
+  ConsolidatedBookingDto,
+  SlotRecommendationDto,
 } from '@parceltime/shared';
 import { z } from 'zod';
 import dayjs from 'dayjs';
@@ -515,5 +518,292 @@ export async function updateSlotInstance(
     return updated;
   });
 }
+
+// Smart Parcel Consolidation Engine (Roadmap 4.1 — P0)
+export async function consolidateAndBookSlots(
+  societyId: string,
+  requestedById: string,
+  data: z.infer<typeof ConsolidateBookingSchema>
+): Promise<ConsolidatedBookingDto> {
+  const society = await prisma.society.findUnique({ where: { id: societyId } });
+  if (!society) throw Errors.NOT_FOUND('Society');
+
+  return await prisma.$transaction(async (tx) => {
+    // 1. Fetch all parcels and validate
+    const parcels = await tx.parcel.findMany({
+      where: {
+        id: { in: data.parcelIds },
+        societyId,
+      },
+      include: {
+        unit: { include: { tower: true } },
+      },
+    });
+
+    if (parcels.length !== data.parcelIds.length) {
+      throw Errors.VALIDATION('One or more parcels were not found or belong to a different society');
+    }
+
+    // Verify all parcels belong to the same unit
+    const unitId = parcels[0].unitId;
+    const allSameUnit = parcels.every((p) => p.unitId === unitId);
+    if (!allSameUnit) {
+      throw Errors.VALIDATION('Parcels must belong to the same residential unit for consolidated delivery');
+    }
+
+    // Verify each parcel status is eligible
+    for (const parcel of parcels) {
+      if (parcel.status !== ParcelStatus.RECEIVED && parcel.status !== ParcelStatus.CANCELLED) {
+        throw Errors.INVALID_STATE(
+          `Parcel ${parcel.parcelCode} cannot be scheduled from status ${parcel.status}`
+        );
+      }
+    }
+
+    // 2. Fetch and validate slot instance
+    const slotInstance = await tx.slotInstance.findUnique({
+      where: { id: data.slotInstanceId },
+    });
+    if (!slotInstance || slotInstance.societyId !== societyId) {
+      throw Errors.NOT_FOUND('Slot');
+    }
+
+    if (slotInstance.status !== SlotInstanceStatus.OPEN) {
+      throw Errors.SLOT_FULL();
+    }
+
+    // Cutoff validation
+    const now = dayjs().tz(society.timezone);
+    const slotStart = dayjs.tz(
+      `${slotInstance.date} ${slotInstance.startTime}`,
+      'YYYY-MM-DD HH:mm',
+      society.timezone
+    );
+    const cutoffTime = slotStart.subtract(society.slotCutoffHours, 'hour');
+    if (now.isAfter(cutoffTime)) {
+      throw Errors.SLOT_CUTOFF();
+    }
+
+    // Check capacity concurrency (consolidated run increments bookedCount by 1)
+    if (slotInstance.bookedCount >= slotInstance.capacity) {
+      throw Errors.SLOT_FULL();
+    }
+
+    await tx.slotInstance.update({
+      where: { id: slotInstance.id },
+      data: { bookedCount: { increment: 1 } },
+    });
+
+    // 3. Mark previous active schedules as superseded for each parcel
+    await tx.deliverySchedule.updateMany({
+      where: {
+        parcelId: { in: data.parcelIds },
+        status: DeliveryScheduleStatus.ACTIVE,
+      },
+      data: { status: DeliveryScheduleStatus.SUPERSEDED },
+    });
+
+    const scheduleIds: string[] = [];
+    const taskIds: string[] = [];
+    const parcelCodes = parcels.map((p) => p.parcelCode);
+
+    // 4. Create schedule & task for each parcel
+    for (const parcel of parcels) {
+      const schedule = await tx.deliverySchedule.create({
+        data: {
+          parcelId: parcel.id,
+          requestedById,
+          slotInstanceId: slotInstance.id,
+          deliveryNote: data.deliveryNote
+            ? `[Consolidated Run: ${parcelCodes.join(', ')}] ${data.deliveryNote}`
+            : `[Consolidated Run: ${parcelCodes.join(', ')}]`,
+          status: DeliveryScheduleStatus.ACTIVE,
+        },
+      });
+      scheduleIds.push(schedule.id);
+
+      const task = await tx.deliveryTask.create({
+        data: {
+          scheduleId: schedule.id,
+          parcelId: parcel.id,
+          status: TaskStatus.OPEN,
+        },
+      });
+      taskIds.push(task.id);
+
+      await tx.parcel.update({
+        where: { id: parcel.id },
+        data: {
+          status: ParcelStatus.SCHEDULED,
+          statusUpdatedAt: new Date(),
+          version: { increment: 1 },
+        },
+      });
+
+      await writeAuditLog({
+        societyId,
+        parcelId: parcel.id,
+        actorId: requestedById,
+        eventType: 'CONSOLIDATED_SLOT_BOOKED',
+        previousStatus: parcel.status,
+        newStatus: ParcelStatus.SCHEDULED,
+        metadata: {
+          slotInstanceId: slotInstance.id,
+          date: slotInstance.date,
+          time: slotInstance.startTime,
+          consolidatedBatchCount: parcels.length,
+          batchParcelCodes: parcelCodes,
+        },
+      });
+    }
+
+    // 5. Emit unified notification
+    await createNotification({
+      societyId,
+      userId: requestedById,
+      type: NotificationCategory.SCHEDULE_CONFIRMED,
+      title: 'Consolidated Delivery Scheduled',
+      message: `Your ${parcels.length} parcels (${parcelCodes.join(', ')}) are consolidated for delivery on ${slotInstance.date} between ${slotInstance.startTime} - ${slotInstance.endTime}.`,
+      relatedParcelId: parcels[0].id,
+    });
+
+    return {
+      scheduleIds,
+      taskIds,
+      parcelIds: data.parcelIds,
+      slotInstanceId: slotInstance.id,
+      deliveryDate: slotInstance.date,
+      deliveryWindow: `${slotInstance.startTime} - ${slotInstance.endTime}`,
+      consolidatedCount: parcels.length,
+    };
+  });
+}
+
+// Intelligent Scheduling: Deterministic Slot Recommendation Engine (Roadmap 4.3 — P1)
+export async function recommendSlots(
+  societyId: string,
+  unitId: string,
+  targetDate?: string
+): Promise<SlotRecommendationDto[]> {
+  const society = await prisma.society.findUnique({ where: { id: societyId } });
+  if (!society) throw Errors.NOT_FOUND('Society');
+
+  const unit = await prisma.unit.findFirst({
+    where: { id: unitId, societyId },
+    include: { tower: true },
+  });
+  if (!unit) throw Errors.NOT_FOUND('Unit');
+
+  const now = dayjs().tz(society.timezone);
+  const dateToUse = targetDate || now.format('YYYY-MM-DD');
+
+  // Ensure instances exist for date
+  await generateSlotInstancesForDate(societyId, dateToUse);
+
+  // Fetch instances for the date
+  const instances = await prisma.slotInstance.findMany({
+    where: { societyId, date: dateToUse },
+    include: {
+      template: true,
+      schedules: {
+        where: { status: DeliveryScheduleStatus.ACTIVE },
+        include: {
+          parcel: {
+            select: { id: true, unitId: true, parcelCode: true, unit: { select: { towerId: true } } },
+          },
+        },
+      },
+    },
+    orderBy: { startTime: 'asc' },
+  });
+
+  const scoredSlots: SlotRecommendationDto[] = instances.map((instance) => {
+    const slotStart = dayjs.tz(`${instance.date} ${instance.startTime}`, 'YYYY-MM-DD HH:mm', society.timezone);
+    const cutoffTime = slotStart.subtract(society.slotCutoffHours, 'hour');
+    const isCutoffPassed = now.isAfter(cutoffTime);
+    const isFull = instance.bookedCount >= instance.capacity;
+    const remainingCapacity = Math.max(0, instance.capacity - instance.bookedCount);
+    const isAvailable = instance.status === SlotInstanceStatus.OPEN && !isCutoffPassed && !isFull;
+
+    const reasons: string[] = [];
+    let score = 0;
+
+    if (!isAvailable) {
+      if (isFull) reasons.push('Window fully booked');
+      else if (isCutoffPassed) reasons.push('Booking cutoff passed');
+      else reasons.push('Window unavailable');
+      score = 0;
+    } else {
+      score = 50; // base score
+
+      // 1. Same-unit parcel consolidation bonus (+50)
+      const sameUnitSchedules = instance.schedules.filter((s) => s.parcel?.unitId === unitId);
+      if (sameUnitSchedules.length > 0) {
+        score += 50;
+        const codes = sameUnitSchedules.map((s) => s.parcel.parcelCode).join(', ');
+        reasons.push(`Consolidates with existing delivery to your unit (${codes})`);
+      }
+
+      // 2. Same-tower clustering bonus (+25)
+      const sameTowerSchedules = instance.schedules.filter(
+        (s) => s.parcel?.unit?.towerId === unit.towerId && s.parcel?.unitId !== unitId
+      );
+      if (sameTowerSchedules.length > 0) {
+        score += 25;
+        reasons.push(`Cluster run active for ${unit.tower.name} (${sameTowerSchedules.length} nearby stops)`);
+      }
+
+      // 3. Evening prime availability bonus (+15)
+      const startHour = parseInt(instance.startTime.split(':')[0], 10);
+      if (startHour >= 18 && startHour <= 21) {
+        score += 15;
+        reasons.push('Prime evening arrival window when residents are home');
+      }
+
+      // 4. Capacity health factor (+0 to 10)
+      const capacityRatio = remainingCapacity / instance.capacity;
+      score += Math.round(capacityRatio * 10);
+      if (capacityRatio > 0.5) {
+        reasons.push('High executive availability');
+      }
+    }
+
+    const slotDto: any = {
+      id: instance.id,
+      templateId: instance.templateId,
+      label: instance.template.label,
+      date: instance.date,
+      startTime: instance.startTime,
+      endTime: instance.endTime,
+      capacity: instance.capacity,
+      bookedCount: instance.bookedCount,
+      remainingCapacity,
+      status: instance.status,
+    };
+
+    return {
+      slot: slotDto,
+      score,
+      recommended: false,
+      reasons,
+    };
+  });
+
+  // Sort descending by score
+  scoredSlots.sort((a, b) => b.score - a.score);
+
+  // Mark top available slot(s) as recommended
+  const maxScore = scoredSlots[0]?.score || 0;
+  if (maxScore > 50) {
+    scoredSlots.forEach((s) => {
+      if (s.score === maxScore && s.slot.remainingCapacity > 0) {
+        s.recommended = true;
+      }
+    });
+  }
+
+  return scoredSlots;
+}
+
 
 

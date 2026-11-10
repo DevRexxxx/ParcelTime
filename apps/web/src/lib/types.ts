@@ -25,6 +25,10 @@ export interface ParcelItem {
   scheduledTime?: string;
   otpCode?: string;
   notes?: string;
+  isConsolidated?: boolean;
+  consolidatedWith?: string[];
+  fulfillmentMode?: 'INTERNAL_DELIVERY' | 'SELF_PICKUP' | 'HYBRID';
+  authorizedReceiver?: string;
 }
 
 export interface SlotItem {
@@ -36,6 +40,9 @@ export interface SlotItem {
   capacity: number;
   bookedCount: number;
   isAvailable: boolean;
+  score?: number;
+  recommended?: boolean;
+  recommendationReason?: string;
 }
 
 export interface DeliveryTaskItem {
@@ -47,5 +54,18 @@ export interface DeliveryTaskItem {
   status: 'OPEN' | 'ASSIGNED' | 'IN_PROGRESS' | 'DONE' | 'FAILED';
   executiveName?: string;
   slotWindow: string;
+  isConsolidated?: boolean;
+  consolidatedParcelCodes?: string[];
 }
+
+export interface PilotKpis {
+  checkInTimeSecs: number;
+  avgStorageDwellHours: number;
+  firstAttemptSuccessRate: number;
+  consolidationRate: number;
+  disputeRatePer1000: number;
+  activeParcelsCount: number;
+  ageingParcelsCount: number;
+}
+
 
