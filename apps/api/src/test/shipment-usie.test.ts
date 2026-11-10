@@ -202,6 +202,7 @@ describe('Live Shipment Integration Architecture (USIE)', () => {
         residentId: 'resident-user-1',
         societyId: 'society-a',
         trackingNumber: '140928192019',
+        carrierCode: 'DELHIVERY',
       } as any);
 
       const result = await ShipmentMatcher.findMatch({
@@ -258,6 +259,57 @@ describe('Live Shipment Integration Architecture (USIE)', () => {
       expect(result.reason).toContain('Order reference is already registered');
     });
 
+    it('detects CONFLICT even when another resident supplies a different or alias carrier code for the same tracking number', async () => {
+      vi.spyOn(prisma.shipment, 'findFirst').mockResolvedValueOnce({
+        id: 'shipment-100',
+        residentId: 'resident-user-1', // Registered under Delhivery
+        societyId: 'society-a',
+        trackingNumber: '140928192019',
+        carrierCode: 'DELHIVERY',
+      } as any);
+
+      // Resident 2 attempts to register same tracking number under "OTHER" or "UNKNOWN"
+      const result = await ShipmentMatcher.findMatch({
+        societyId: 'society-a',
+        trackingNumber: '140928192019',
+        carrierCode: 'OTHER',
+        residentId: 'resident-user-2',
+      });
+
+      expect(result.outcome).toBe('CONFLICT');
+      expect(result.reason).toContain('already registered to another resident');
+    });
+
+    it('detects CONFLICT through historical ShipmentSourceReference lookup', async () => {
+      // Direct tracking lookup returns null
+      vi.spyOn(prisma.shipment, 'findFirst')
+        .mockResolvedValueOnce(null)
+        // Direct shipment orderReference returns null
+        .mockResolvedValueOnce(null);
+
+      // Source reference matches historical Gmail / order ref belonging to Resident 1
+      vi.spyOn(prisma.shipmentSourceReference, 'findFirst').mockResolvedValueOnce({
+        id: 'ref-1',
+        externalReference: 'AMZ-REF-999',
+        shipment: {
+          id: 'shipment-105',
+          residentId: 'resident-user-1',
+          societyId: 'society-a',
+        },
+      } as any);
+
+      const result = await ShipmentMatcher.findMatch({
+        societyId: 'society-a',
+        trackingNumber: '8877665544',
+        carrierCode: 'DELHIVERY',
+        orderReference: 'AMZ-REF-999',
+        residentId: 'resident-user-2',
+      });
+
+      expect(result.outcome).toBe('CONFLICT');
+      expect(result.reason).toMatch(/already (registered|linked) to another resident/);
+    });
+
     it('rejects manual shipment entry when tracking number has fewer than 4 alphanumeric characters', async () => {
       await expect(
         ShipmentService.createManualShipment('society-a', 'resident-user-1', {
@@ -288,6 +340,49 @@ describe('Live Shipment Integration Architecture (USIE)', () => {
           carrierCode: 'DELHIVERY',
         })
       ).rejects.toThrow(/already registered to another resident/);
+    });
+
+    it('rejects matchShipmentToParcel if shipment is already matched to a different parcel', async () => {
+      vi.spyOn(prisma.shipment, 'findUnique').mockResolvedValueOnce({
+        id: 'shipment-1',
+        societyId: 'society-a',
+        matchedParcelId: 'existing-parcel-999',
+      } as any);
+
+      await expect(
+        ShipmentService.matchShipmentToParcel('society-a', 'shipment-1', 'new-parcel-111', 'actor-1')
+      ).rejects.toThrow(/already linked to another gate parcel/);
+    });
+
+    it('processes carrier webhook projection enforcing External Delivery Invariant and notifying resident', async () => {
+      vi.spyOn(prisma.shipment, 'findMany').mockResolvedValueOnce([
+        {
+          id: 'shipment-1',
+          societyId: 'society-a',
+          residentId: 'resident-1',
+          carrierCode: 'DELHIVERY',
+          trackingNumber: '140928192019',
+          externalStatus: 'IN_TRANSIT',
+        } as any,
+      ]);
+
+      vi.spyOn(prisma, '$transaction').mockResolvedValueOnce([{}, {}]);
+      vi.spyOn(prisma.notificationPreference, 'findUnique').mockResolvedValueOnce({ enabled: true } as any);
+      vi.spyOn(prisma.notification, 'create').mockResolvedValueOnce({} as any);
+      vi.spyOn(prisma.outboxEvent, 'create').mockResolvedValueOnce({} as any);
+
+      const result = await ShipmentService.processCarrierWebhookUpdate({
+        societyId: 'society-a',
+        trackingNumber: '140928192019',
+        status: 'DELIVERED',
+        eventCode: 'DELIVERED',
+        description: 'Delivered at security guard booth',
+        location: 'Society Security Gate',
+      });
+
+      expect(result).not.toBeNull();
+      expect(result?.projectedStatus).toBe(ShipmentExternalStatus.DELIVERED_TO_SOCIETY);
+      expect(result?.projectedStatus).not.toBe('DELIVERED_TO_RESIDENT');
     });
   });
 });

@@ -12,7 +12,8 @@ export interface MatchResult {
 
 export class ShipmentMatcher {
   /**
-   * Evaluates if an incoming shipment candidate matches an existing shipment record
+   * Evaluates if an incoming shipment candidate matches an existing shipment record.
+   * Enforces cross-resident conflict protection, carrier aliasing, and source-reference lookups (§10 & §14).
    */
   static async findMatch(params: {
     societyId: string;
@@ -23,41 +24,48 @@ export class ShipmentMatcher {
   }): Promise<MatchResult> {
     const cleanTracking = ShipmentNormalizer.cleanTrackingNumber(params.trackingNumber);
     const normalizedCarrier = ShipmentNormalizer.normalizeCarrier(params.carrierCode);
+    const cleanOrderRef = params.orderReference?.trim() || undefined;
 
-    // 1. Exact Match: Society + Carrier + Tracking Number
-    const exact = await prisma.shipment.findFirst({
+    // 1. Primary Invariant: Physical Tracking Number within Society Boundary
+    // Any parcel in the same society with this tracking number represents the exact same physical delivery
+    const existingTracking = await prisma.shipment.findFirst({
       where: {
         societyId: params.societyId,
         trackingNumber: cleanTracking,
-        carrierCode: normalizedCarrier,
       },
     });
 
-    if (exact) {
+    if (existingTracking) {
       // Cross-resident conflict protection (§10 & §14)
-      if (params.residentId && exact.residentId !== params.residentId) {
+      if (params.residentId && existingTracking.residentId !== params.residentId) {
         return {
           outcome: 'CONFLICT',
-          matchedShipmentId: exact.id,
+          matchedShipmentId: existingTracking.id,
           confidence: 0.5,
           reason: 'Tracking number is already registered to another resident in this society',
         };
       }
 
+      const isExactCarrier = existingTracking.carrierCode === normalizedCarrier;
       return {
-        outcome: 'EXACT',
-        matchedShipmentId: exact.id,
-        confidence: 1.0,
-        reason: 'Matched exact carrier and tracking number within society boundary',
+        outcome: isExactCarrier ? 'EXACT' : 'HIGH_CONFIDENCE',
+        matchedShipmentId: existingTracking.id,
+        confidence: isExactCarrier ? 1.0 : 0.95,
+        reason: isExactCarrier
+          ? 'Matched exact carrier and tracking number within society boundary'
+          : `Matched tracking number for resident with carrier alias (${existingTracking.carrierCode} vs ${normalizedCarrier})`,
       };
     }
 
-    // 2. High Confidence Match: Society + Order Reference
-    if (params.orderReference) {
+    // 2. High Confidence Match: Society + Order Reference on Shipment table
+    if (cleanOrderRef) {
       const orderMatch = await prisma.shipment.findFirst({
         where: {
           societyId: params.societyId,
-          orderReference: params.orderReference,
+          orderReference: {
+            equals: cleanOrderRef,
+            mode: 'insensitive',
+          },
         },
       });
 
@@ -78,9 +86,40 @@ export class ShipmentMatcher {
           reason: 'Matched merchant order reference',
         };
       }
+
+      // 3. Match against ShipmentSourceReference table (e.g. Gmail discovery IDs, marketplace refs)
+      const sourceRefMatch = await prisma.shipmentSourceReference.findFirst({
+        where: {
+          externalReference: cleanOrderRef,
+          shipment: {
+            societyId: params.societyId,
+          },
+        },
+        include: {
+          shipment: true,
+        },
+      });
+
+      if (sourceRefMatch?.shipment) {
+        if (params.residentId && sourceRefMatch.shipment.residentId !== params.residentId) {
+          return {
+            outcome: 'CONFLICT',
+            matchedShipmentId: sourceRefMatch.shipment.id,
+            confidence: 0.5,
+            reason: 'Order reference is already registered to another resident in this society',
+          };
+        }
+
+        return {
+          outcome: 'HIGH_CONFIDENCE',
+          matchedShipmentId: sourceRefMatch.shipment.id,
+          confidence: 0.90,
+          reason: 'Matched historical source reference in society',
+        };
+      }
     }
 
-    // 3. Match across different carrier spelling / same resident & tracking number
+    // 4. Match via resident + tracking number
     if (params.residentId) {
       const residentTrackingMatch = await prisma.shipment.findFirst({
         where: {
@@ -107,4 +146,5 @@ export class ShipmentMatcher {
     };
   }
 }
+
 
