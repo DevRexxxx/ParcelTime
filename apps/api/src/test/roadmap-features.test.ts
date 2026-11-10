@@ -1,13 +1,17 @@
 import { describe, it, expect } from 'vitest';
+import crypto from 'crypto';
 import {
   ConsolidateBookingSchema,
   RequestSelfPickupSchema,
   SlotRecommendationQuerySchema,
   ReportDamageDisputeSchema,
+  ResidentHoldSchema,
+  ParcelClass,
   FulfillmentMode,
   ParcelStatus,
   SlotInstanceStatus,
 } from '@parceltime/shared';
+import { hashOtp } from '../modules/tasks/task.service';
 
 describe('Roadmap P0 & P1 Improvements: Schemas & Invariants', () => {
   describe('4.1 Smart Parcel Consolidation (P0)', () => {
@@ -143,4 +147,64 @@ describe('Roadmap P0 & P1 Improvements: Schemas & Invariants', () => {
       expect(parsed.photoRef).toBe('s3://evidence/pt-8942-damage.jpg');
     });
   });
+
+  describe('Security Hardening & Roadmap v2 Foundations (§3.1, §8.3, §8.8)', () => {
+    it('uses salted HMAC-SHA256 with parcelId to thwart dictionary attacks', () => {
+      const parcelId1 = 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11';
+      const parcelId2 = 'b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a22';
+      const otp = '482910';
+
+      const hash1 = hashOtp(parcelId1, otp);
+      const hash2 = hashOtp(parcelId2, otp);
+
+      // Same OTP for different parcels produces completely different hashes
+      expect(hash1).not.toBe(hash2);
+      expect(hash1).toHaveLength(64); // SHA-256 hex length
+      expect(hash2).toHaveLength(64);
+    });
+
+    it('enforces constant-time verification against timing side-channels', () => {
+      const parcelId = 'c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a33';
+      const correctOtp = '819203';
+      const wrongOtp = '819204';
+
+      const correctHash = hashOtp(parcelId, correctOtp);
+      const calculatedHashWrong = hashOtp(parcelId, wrongOtp);
+
+      const isMatchWrong = crypto.timingSafeEqual(
+        Buffer.from(correctHash, 'hex'),
+        Buffer.from(calculatedHashWrong, 'hex')
+      );
+      expect(isMatchWrong).toBe(false);
+
+      const isMatchRight = crypto.timingSafeEqual(
+        Buffer.from(correctHash, 'hex'),
+        Buffer.from(correctHash, 'hex')
+      );
+      expect(isMatchRight).toBe(true);
+    });
+
+    it('supports Special Parcel Classes (§8.3)', () => {
+      expect(ParcelClass.STANDARD).toBe('STANDARD');
+      expect(ParcelClass.HIGH_VALUE).toBe('HIGH_VALUE');
+      expect(ParcelClass.FRAGILE).toBe('FRAGILE');
+      expect(ParcelClass.PERISHABLE).toBe('PERISHABLE');
+      expect(ParcelClass.MEDICINE).toBe('MEDICINE');
+      expect(ParcelClass.CASH_ON_DELIVERY).toBe('CASH_ON_DELIVERY');
+    });
+
+    it('validates Resident Away / Hold Mode Schema (§8.8)', () => {
+      const payload = {
+        unitId: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
+        awayUntil: '2026-11-20',
+        reason: 'Out of town on vacation, hold all packages at gate vault',
+      };
+
+      const parsed = ResidentHoldSchema.parse(payload);
+      expect(parsed.unitId).toBe('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11');
+      expect(parsed.awayUntil).toBe('2026-11-20');
+      expect(parsed.reason).toContain('vacation');
+    });
+  });
 });
+

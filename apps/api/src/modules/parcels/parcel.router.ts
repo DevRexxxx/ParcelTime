@@ -67,3 +67,8 @@ parcelRouter.post(
   requireRoles(UserRole.RESIDENT) as any,
   controller.generateOtp
 );
+parcelRouter.post(
+  '/:id/dispute',
+  requireRoles(UserRole.RESIDENT, UserRole.SOCIETY_ADMIN) as any,
+  controller.reportDispute
+);

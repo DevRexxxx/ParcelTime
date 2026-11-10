@@ -259,7 +259,24 @@ export const ResidentView: React.FC<ResidentViewProps> = ({
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-1.5">
+                    <div className="flex items-center gap-1.5 flex-wrap justify-end">
+                      {parcel.parcelClass && parcel.parcelClass !== 'STANDARD' && (
+                        <span
+                          className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${
+                            parcel.parcelClass === 'FRAGILE'
+                              ? 'border-amber-500/30 bg-amber-500/10 text-amber-400'
+                              : parcel.parcelClass === 'HIGH_VALUE'
+                              ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400'
+                              : 'border-cyan-500/30 bg-cyan-500/10 text-cyan-400'
+                          }`}
+                        >
+                          {parcel.parcelClass === 'FRAGILE'
+                            ? '⚡ Fragile'
+                            : parcel.parcelClass === 'HIGH_VALUE'
+                            ? '💎 High-Value'
+                            : parcel.parcelClass}
+                        </span>
+                      )}
                       {isSelfPickup && (
                         <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full border border-sky-500/30 bg-sky-500/10 text-sky-400">
                           Gate 1 Pickup

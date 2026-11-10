@@ -7,6 +7,7 @@ import {
   SlotInstanceStatus,
   NotificationCategory,
   FulfillmentMode,
+  ParcelClass,
 } from './enums';
 
 // Auth schemas
@@ -76,6 +77,7 @@ export const RegisterParcelSchema = z.object({
   unitId: z.string().uuid(),
   recipientName: z.string().max(100).optional(),
   storageLocationId: z.string().uuid(),
+  parcelClass: z.nativeEnum(ParcelClass).default(ParcelClass.STANDARD).optional(),
   idempotencyKey: z.string().min(1).max(100),
 });
 
@@ -226,5 +228,13 @@ export const ReportDamageDisputeSchema = z.object({
   photoRef: z.string().optional(),
   idempotencyKey: z.string().min(1).max(100),
 });
+
+// Resident "Hold" / Away Mode Schema (Roadmap 5 & 8.8 — P1)
+export const ResidentHoldSchema = z.object({
+  unitId: z.string().uuid(),
+  awayUntil: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be YYYY-MM-DD'),
+  reason: z.string().max(200).optional(),
+});
+
 
 

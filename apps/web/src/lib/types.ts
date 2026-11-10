@@ -29,6 +29,7 @@ export interface ParcelItem {
   consolidatedWith?: string[];
   fulfillmentMode?: 'INTERNAL_DELIVERY' | 'SELF_PICKUP' | 'HYBRID';
   authorizedReceiver?: string;
+  parcelClass?: 'STANDARD' | 'HIGH_VALUE' | 'FRAGILE' | 'PERISHABLE' | 'MEDICINE' | 'CASH_ON_DELIVERY';
 }
 
 export interface SlotItem {

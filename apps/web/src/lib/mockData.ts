@@ -14,6 +14,7 @@ export const INITIAL_PARCELS: ParcelItem[] = [
     receivedAt: 'Today at 02:15 PM',
     notes: 'Fragile: Electronics package',
     fulfillmentMode: 'INTERNAL_DELIVERY',
+    parcelClass: 'FRAGILE',
   },
   {
     id: 'p-5',
@@ -28,6 +29,7 @@ export const INITIAL_PARCELS: ParcelItem[] = [
     receivedAt: 'Today at 03:40 PM',
     notes: 'Apparel box - eligible for consolidation',
     fulfillmentMode: 'INTERNAL_DELIVERY',
+    parcelClass: 'STANDARD',
   },
   {
     id: 'p-2',
@@ -43,6 +45,7 @@ export const INITIAL_PARCELS: ParcelItem[] = [
     scheduledTime: 'Tomorrow, 09:00 - 11:00 AM',
     notes: 'Doorbell ring twice',
     fulfillmentMode: 'INTERNAL_DELIVERY',
+    parcelClass: 'STANDARD',
   },
   {
     id: 'p-3',
@@ -59,6 +62,7 @@ export const INITIAL_PARCELS: ParcelItem[] = [
     otpCode: '482910',
     notes: 'Approaching Tower A with courier Rajesh Kumar',
     fulfillmentMode: 'INTERNAL_DELIVERY',
+    parcelClass: 'HIGH_VALUE',
   },
   {
     id: 'p-4',

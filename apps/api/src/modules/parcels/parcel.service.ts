@@ -6,6 +6,7 @@ import {
   NotificationCategory,
   PickupRequestStatus,
   VerificationMethod,
+  ReportDamageDisputeSchema,
 } from '@parceltime/shared';
 import { z } from 'zod';
 import { v4 as uuidv4 } from 'uuid';
@@ -253,3 +254,36 @@ export async function completePickup(
     return updatedParcel;
   });
 }
+
+// Damage / Dispute Workflow (Roadmap 5 & 8.6 — P1)
+export async function reportDamageDispute(
+  parcelId: string,
+  societyId: string,
+  actorId: string,
+  data: z.infer<typeof ReportDamageDisputeSchema>
+) {
+  const parcel = await prisma.parcel.findFirst({
+    where: { id: parcelId, societyId },
+  });
+  if (!parcel) throw Errors.NOT_FOUND('Parcel');
+
+  await writeAuditLog({
+    societyId,
+    parcelId,
+    actorId,
+    eventType: 'PARCEL_DISPUTE_REPORTED',
+    metadata: {
+      description: data.description,
+      photoRef: data.photoRef,
+      timestamp: new Date().toISOString(),
+    },
+    flagged: true,
+  });
+
+  return {
+    success: true,
+    parcelId,
+    message: 'Dispute report logged in immutable audit registry for society admin review.',
+  };
+}
+

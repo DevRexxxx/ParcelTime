@@ -141,3 +141,13 @@ export enum FulfillmentMode {
   SELF_PICKUP = 'SELF_PICKUP',
 }
 
+export enum ParcelClass {
+  STANDARD = 'STANDARD',
+  HIGH_VALUE = 'HIGH_VALUE',
+  FRAGILE = 'FRAGILE',
+  PERISHABLE = 'PERISHABLE',
+  MEDICINE = 'MEDICINE',
+  CASH_ON_DELIVERY = 'CASH_ON_DELIVERY',
+}
+
+

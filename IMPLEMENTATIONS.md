@@ -3,7 +3,7 @@
 > **Document Version:** 2.1.0  
 > **Last Synchronized:** 2026-11-10  
 > **Repository:** [DevRexxxx/ParcelTime](https://github.com/DevRexxxx/ParcelTime.git)  
-> **Live Production Deployment:** [https://parceltime.up.railway.app](https://parceltime.up.railway.app/)  
+> **Live Production Deployment:** [https://parceltimeweb-production.up.railway.app](https://parceltimeweb-production.up.railway.app/)  
 > **Compliance:** Technical Requirements Document (TRD), Product Requirements Document (PRD), System Design Rules, 2030 Spatial Design System, UI Fix and Build Spec (v2), and Product Analysis & Improvement Roadmap (November 2026).
 
 ---
@@ -240,4 +240,7 @@ The parcel state machine is enforced exclusively through a single entry point:
 | [`tenant-isolation.test.ts`](file:///d:/Projects/ParcelTime/apps/api/src/test/tenant-isolation.test.ts) | Cross-Tenant Security | Ensures users cannot access parcels or units outside their active society |
 | [`schemas.test.ts`](file:///d:/Projects/ParcelTime/apps/api/src/test/schemas.test.ts) | Shared Runtime Contracts | Tests Zod validations for registration, bookings, and overrides |
 | [`features.test.ts`](file:///d:/Projects/ParcelTime/apps/api/src/test/features.test.ts) | Bulk Import, Devices, Overrides | Tests bulk unit parsing, device push registration, and slot blocking schemas |
+| [`roadmap-features.test.ts`](file:///d:/Projects/ParcelTime/apps/api/src/test/roadmap-features.test.ts) | Roadmap v2 (Consolidation, Hybrid, Security) | Multi-parcel consolidation, fulfillment modes, deterministic scoring, salted HMAC-SHA256 OTP, special parcel classes, resident hold mode |
+
+**Total Tests:** 33 automated Vitest tests across 7 test suites (100% passing).
 

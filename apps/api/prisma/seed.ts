@@ -10,10 +10,17 @@ async function hashPassword(plain: string) {
 }
 
 function hashOtp(parcelId: string, otp: string): string {
-  return crypto.createHash('sha256').update(`${parcelId}:${otp}`).digest('hex');
+  const secret = process.env.OTP_SECRET || 'parceltime_production_otp_hmac_secret_key_2026';
+  return crypto.createHmac('sha256', secret).update(`${parcelId}:${otp}`).digest('hex');
 }
 
 async function main() {
+  // §3.1 / P0 Security Check: Block seed demo credentials in production
+  if (process.env.NODE_ENV === 'production') {
+    console.error('⛔ FATAL: Database seeding is blocked in production environment (NODE_ENV=production). Demo credentials must never be seeded to production.');
+    process.exit(1);
+  }
+
   console.log('🌱 Starting database seed...');
 
   // 1. Create Society

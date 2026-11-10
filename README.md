@@ -1,6 +1,6 @@
 <p align="center">
-  <a href="https://parceltime.up.railway.app/" target="_blank">
-    <img src="docs/assets/hero-banner.jpg" alt="ParcelTime 2030 — Spatial Residential Parcel Delivery Intelligence Platform" width="100%" />
+  <a href="https://parceltimeweb-production.up.railway.app/" target="_blank">
+    <img src="https://raw.githubusercontent.com/DevRexxxx/ParcelTime/main/docs/assets/hero-banner.jpg" alt="ParcelTime 2030 — Spatial Residential Parcel Delivery Intelligence Platform" width="100%" style="border-radius: 16px; max-width: 100%;" />
   </a>
 </p>
 
@@ -25,12 +25,12 @@
 </p>
 
 <p align="center">
-  <a href="https://parceltime.up.railway.app/" target="_blank">
-    <img src="https://img.shields.io/badge/🚀_Live_Production_Demo-https%3A%2F%2Fparceltime.up.railway.app-FF5D00?style=for-the-badge&logo=railway&logoColor=white" alt="Live Demo" />
+  <a href="https://parceltimeweb-production.up.railway.app/" target="_blank">
+    <img src="https://img.shields.io/badge/🚀_Live_Production_Demo-https%3A%2F%2Fparceltimeweb--production.up.railway.app-FF5D00?style=for-the-badge&logo=railway&logoColor=white" alt="Live Demo" />
   </a>
 </p>
 
-> 🌐 **Live Production Deployment:** [https://parceltime.up.railway.app](https://parceltime.up.railway.app/)  
+> 🌐 **Live Production Deployment:** [https://parceltimeweb-production.up.railway.app](https://parceltimeweb-production.up.railway.app/)  
 > 📦 **Monorepo Architecture:** Turborepo + Next.js 14 (2030 Spatial UI) + Express 4 + Prisma ORM + PostgreSQL
 
 ---
@@ -315,14 +315,14 @@ The user interface follows the **2030 Spatial Design System** — blending the s
 ### 🌐 Live Production Deployment
 
 The web application is deployed and publicly accessible on Railway:
-- **Production URL:** [https://parceltime.up.railway.app](https://parceltime.up.railway.app/)
+- **Production URL:** [https://parceltimeweb-production.up.railway.app](https://parceltimeweb-production.up.railway.app/)
 - **Infrastructure:** Railway Platform (`up.railway.app`)
 - **Port:** `3000` (Next.js 14 App Router)
 
 ### Prerequisites
 
-- [Node.js](https://nodejs.org/) (v18.18+ or v20+)
-- [pnpm](https://pnpm.io/) (v10+ or v9+)
+- [Node.js](https://nodejs.org/) (v20+ recommended, `.nvmrc` provided)
+- [pnpm](https://pnpm.io/) (v9+ or v10+)
 - [PostgreSQL](https://www.postgresql.org/) (v14+)
 
 ### 1. Clone & Install Dependencies

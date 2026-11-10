@@ -10,6 +10,7 @@ import {
   BookSlotSchema,
   PickupRequestSchema,
   CompletePickupSchema,
+  ReportDamageDisputeSchema,
 } from '@parceltime/shared';
 import { Errors } from '../../lib/errors';
 import { prisma } from '../../lib/prisma';
@@ -213,3 +214,19 @@ export async function generateOtp(req: AuthenticatedRequest, res: Response, next
     next(e);
   }
 }
+
+export async function reportDispute(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+  try {
+    const data = ReportDamageDisputeSchema.parse(req.body);
+    const result = await service.reportDamageDispute(
+      req.params.id,
+      req.user!.societyId,
+      req.user!.userId,
+      data
+    );
+    res.status(201).json(result);
+  } catch (e) {
+    next(e);
+  }
+}
+

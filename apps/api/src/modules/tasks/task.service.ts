@@ -16,7 +16,8 @@ import { writeAuditLog } from '../audit/audit.service';
 import { createNotification } from '../notifications/notification.service';
 
 export function hashOtp(parcelId: string, otp: string): string {
-  return crypto.createHash('sha256').update(`${parcelId}:${otp}`).digest('hex');
+  const secret = process.env.OTP_SECRET || 'parceltime_production_otp_hmac_secret_key_2026';
+  return crypto.createHmac('sha256', secret).update(`${parcelId}:${otp}`).digest('hex');
 }
 
 export async function generateHandoverOtp(societyId: string, parcelId: string, userId: string) {
@@ -328,7 +329,15 @@ export async function verifyOtpAndComplete(
     }
 
     const expectedHash = hashOtp(task.parcelId, otp);
-    const isValid = challenge.hashedOtp === expectedHash;
+    let isValid = false;
+    try {
+      isValid = crypto.timingSafeEqual(
+        Buffer.from(challenge.hashedOtp, 'hex'),
+        Buffer.from(expectedHash, 'hex')
+      );
+    } catch {
+      isValid = false;
+    }
 
     if (!isValid) {
       const attemptsUsed = challenge.attemptsUsed + 1;

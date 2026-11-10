@@ -12,6 +12,7 @@ import {
   PickupRequestStatus,
   OtpChallengeStatus,
   FulfillmentMode,
+  ParcelClass,
 } from './enums';
 
 // API Error format
@@ -124,6 +125,7 @@ export interface ParcelDto {
   failedAttemptCount: number;
   schedule?: DeliveryScheduleDto;
   notes?: string;
+  parcelClass?: ParcelClass;
   version: number;
 }
 
