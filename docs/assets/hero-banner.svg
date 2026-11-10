@@ -1,0 +1,180 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 520" width="100%" height="100%">
+  <defs>
+    <!-- Background Gradients -->
+    <radialGradient id="bg-glow-orange" cx="50%" cy="40%" r="55%" fx="50%" fy="30%">
+      <stop offset="0%" stop-color="#FF5D00" stop-opacity="0.22" />
+      <stop offset="50%" stop-color="#FF5D00" stop-opacity="0.05" />
+      <stop offset="100%" stop-color="#0D0101" stop-opacity="0" />
+    </radialGradient>
+    <radialGradient id="bg-glow-purple" cx="15%" cy="20%" r="45%">
+      <stop offset="0%" stop-color="#8B5CF6" stop-opacity="0.18" />
+      <stop offset="100%" stop-color="#0D0101" stop-opacity="0" />
+    </radialGradient>
+    <radialGradient id="bg-glow-blue" cx="85%" cy="30%" r="45%">
+      <stop offset="0%" stop-color="#06B6D4" stop-opacity="0.15" />
+      <stop offset="100%" stop-color="#0D0101" stop-opacity="0" />
+    </radialGradient>
+
+    <!-- Linear Gradients for UI Elements -->
+    <linearGradient id="brand-orange" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FF5D00" />
+      <stop offset="100%" stop-color="#FF8C38" />
+    </linearGradient>
+    <linearGradient id="glass-stroke" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.25" />
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0.03" />
+    </linearGradient>
+    <linearGradient id="glass-card-bg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.07" />
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0.02" />
+    </linearGradient>
+    <linearGradient id="card-inner-glow" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#FF5D00" stop-opacity="0.4" />
+      <stop offset="50%" stop-color="#8B5CF6" stop-opacity="0.2" />
+      <stop offset="100%" stop-color="#06B6D4" stop-opacity="0.3" />
+    </linearGradient>
+
+    <!-- Drop Shadows & Blurs -->
+    <filter id="soft-shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="12" stdDeviation="16" flood-color="#000000" flood-opacity="0.65" />
+    </filter>
+    <filter id="glow-orange-filter" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="24" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+
+    <!-- Grid Pattern -->
+    <pattern id="spatial-grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#FFFFFF" stroke-opacity="0.04" stroke-width="1" />
+    </pattern>
+  </defs>
+
+  <!-- Base Canvas -->
+  <rect width="1200" height="520" fill="#0D0101" />
+
+  <!-- Grid Layer -->
+  <rect width="1200" height="520" fill="url(#spatial-grid)" />
+
+  <!-- Ethereal Ambient Glows -->
+  <rect width="1200" height="520" fill="url(#bg-glow-purple)" />
+  <rect width="1200" height="520" fill="url(#bg-glow-blue)" />
+  <rect width="1200" height="520" fill="url(#bg-glow-orange)" />
+
+  <!-- Center Top Pill / Release Badge -->
+  <g transform="translate(460, 48)">
+    <rect x="0" y="0" width="280" height="34" rx="17" fill="#ffffff" fill-opacity="0.05" stroke="url(#glass-stroke)" stroke-width="1" />
+    <circle cx="18" cy="17" r="4.5" fill="#FF5D00" />
+    <circle cx="18" cy="17" r="8" fill="#FF5D00" fill-opacity="0.25" />
+    <text x="34" y="22" fill="#FFFAFA" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12" font-weight="600" letter-spacing="1">VISIONOS 2030 SPATIAL SUITE</text>
+  </g>
+
+  <!-- Main Hero Brand Icon (Floating 3D Box) -->
+  <g transform="translate(600, 155)" filter="url(#soft-shadow)">
+    <!-- Ambient Halo Glow behind box -->
+    <ellipse cx="0" cy="10" rx="90" ry="40" fill="#FF5D00" fill-opacity="0.35" filter="url(#glow-orange-filter)" />
+    
+    <!-- Outer Floating Glass Ring -->
+    <ellipse cx="0" cy="15" rx="75" ry="25" fill="none" stroke="url(#card-inner-glow)" stroke-width="2" stroke-dasharray="6 4" opacity="0.8" />
+    
+    <!-- Isometric 3D Parcel Box Icon -->
+    <g transform="translate(-45, -45)">
+      <!-- Top Face -->
+      <polygon points="45,5 85,25 45,45 5,25" fill="#FF7726" stroke="#FFA366" stroke-width="1.5" />
+      <polygon points="45,5 65,15 45,25 25,15" fill="#FFA366" fill-opacity="0.4" />
+      <!-- Left Face -->
+      <polygon points="5,25 45,45 45,85 5,65" fill="#FF5D00" stroke="#FF8533" stroke-width="1.5" />
+      <!-- Right Face -->
+      <polygon points="45,45 85,25 85,65 45,85" fill="#CC4A00" stroke="#FF7726" stroke-width="1.5" />
+      <!-- Center Laser Scanning Seam -->
+      <polyline points="45,5 45,45 85,65" fill="none" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round" opacity="0.9" />
+      <polyline points="5,25 45,45 45,85" fill="none" stroke="#FFFFFF" stroke-width="2" opacity="0.6" />
+    </g>
+  </g>
+
+  <!-- Title & Marketing Headings -->
+  <g text-anchor="middle">
+    <text x="600" y="255" fill="#FFFAFA" font-family="-apple-system, BlinkMacSystemFont, 'Space Grotesk', 'Inter', sans-serif" font-size="52" font-weight="900" letter-spacing="-1">
+      Parcel<tspan fill="#FF5D00">Time</tspan>
+    </text>
+    <text x="600" y="292" fill="#FFFAFA" fill-opacity="0.85" font-family="-apple-system, BlinkMacSystemFont, 'Inter', sans-serif" font-size="18" font-weight="500" letter-spacing="-0.2">
+      Residential Parcel Intelligence &amp; Deterministic Doorstep Delivery
+    </text>
+    <text x="600" y="318" fill="#FFFAFA" fill-opacity="0.45" font-family="-apple-system, BlinkMacSystemFont, 'Inter', sans-serif" font-size="14" font-weight="400" font-style="italic">
+      "Instead of adapting your schedule to your parcel, your parcel adapts to your schedule."
+    </text>
+  </g>
+
+  <!-- Left Floating Spatial Glass Card: Greenwood Palms Telemetry -->
+  <g transform="translate(60, 350)" filter="url(#soft-shadow)">
+    <rect width="320" height="120" rx="24" fill="url(#glass-card-bg)" stroke="url(#glass-stroke)" stroke-width="1.2" />
+    <!-- Gradient accent edge -->
+    <rect x="0" y="0" width="320" height="2" rx="1" fill="url(#card-inner-glow)" />
+    
+    <circle cx="28" cy="32" r="5" fill="#10B981" />
+    <circle cx="28" cy="32" r="9" fill="#10B981" fill-opacity="0.2" />
+    <text x="44" y="36" fill="#FFFAFA" font-family="-apple-system, BlinkMacSystemFont, 'Inter', sans-serif" font-size="13" font-weight="700">Greenwood Palms</text>
+    <text x="240" y="36" fill="#10B981" font-family="-apple-system, BlinkMacSystemFont, 'Inter', sans-serif" font-size="11" font-weight="600">Unit A-102</text>
+    
+    <text x="28" y="70" fill="#FFFAFA" fill-opacity="0.5" font-family="-apple-system, BlinkMacSystemFont, 'Inter', sans-serif" font-size="11">Active In-Vault Storage</text>
+    <text x="28" y="92" fill="#FFFAFA" font-family="-apple-system, BlinkMacSystemFont, 'Inter', sans-serif" font-size="18" font-weight="800">1 Parcel <tspan fill="#FF5D00" font-size="12" font-weight="600">(Amazon PT-8942)</tspan></text>
+    
+    <text x="245" y="92" fill="#FF5D00" font-family="-apple-system, BlinkMacSystemFont, 'Inter', sans-serif" font-size="12" font-weight="600">Shelf A-3</text>
+  </g>
+
+  <!-- Center Floating Spatial Glass Card: Live Doorstep Delivery -->
+  <g transform="translate(420, 350)" filter="url(#soft-shadow)">
+    <rect width="360" height="120" rx="24" fill="url(#glass-card-bg)" stroke="url(#glass-stroke)" stroke-width="1.2" />
+    <rect x="0" y="0" width="360" height="2" rx="1" fill="#FF5D00" />
+
+    <g transform="translate(24, 24)">
+      <!-- Orange Out For Delivery Pulse Pill -->
+      <rect x="0" y="0" width="136" height="24" rx="12" fill="#FF5D00" fill-opacity="0.18" stroke="#FF5D00" stroke-opacity="0.4" stroke-width="1" />
+      <circle cx="12" cy="12" r="3.5" fill="#FF5D00" />
+      <text x="24" y="16" fill="#FF5D00" font-family="-apple-system, BlinkMacSystemFont, 'Inter', sans-serif" font-size="10" font-weight="800" letter-spacing="0.5">OUT FOR DELIVERY</text>
+
+      <text x="220" y="16" fill="#FFFAFA" font-family="-apple-system, BlinkMacSystemFont, 'Inter', sans-serif" font-size="12" font-weight="700">PT-7621</text>
+      
+      <text x="0" y="48" fill="#FFFAFA" font-family="-apple-system, BlinkMacSystemFont, 'Inter', sans-serif" font-size="14" font-weight="700">Delhivery Express</text>
+      <text x="0" y="66" fill="#FFFAFA" fill-opacity="0.55" font-family="-apple-system, BlinkMacSystemFont, 'Inter', sans-serif" font-size="11">Executive: Rajesh Kumar • Approaching Tower B</text>
+
+      <!-- Mini Stepper Bar -->
+      <g transform="translate(0, 76)">
+        <line x1="0" y1="4" x2="312" y2="4" stroke="#FFFFFF" stroke-opacity="0.1" stroke-width="2" />
+        <line x1="0" y1="4" x2="220" y2="4" stroke="#FF5D00" stroke-width="2" />
+        <circle cx="0" cy="4" r="3.5" fill="#FF5D00" />
+        <circle cx="156" cy="4" r="4.5" fill="#FF5D00" />
+        <circle cx="312" cy="4" r="3.5" fill="#FFFFFF" fill-opacity="0.3" />
+      </g>
+    </g>
+  </g>
+
+  <!-- Right Floating Spatial Glass Card: Zero-Trust Cryptographic OTP -->
+  <g transform="translate(820, 350)" filter="url(#soft-shadow)">
+    <rect width="320" height="120" rx="24" fill="url(#glass-card-bg)" stroke="url(#glass-stroke)" stroke-width="1.2" />
+    <rect x="0" y="0" width="320" height="2" rx="1" fill="#8B5CF6" />
+
+    <g transform="translate(24, 24)">
+      <!-- Security Shield Badge -->
+      <rect x="0" y="0" width="130" height="24" rx="12" fill="#8B5CF6" fill-opacity="0.18" stroke="#8B5CF6" stroke-opacity="0.4" stroke-width="1" />
+      <circle cx="12" cy="12" r="3.5" fill="#8B5CF6" />
+      <text x="24" y="16" fill="#A78BFA" font-family="-apple-system, BlinkMacSystemFont, 'Inter', sans-serif" font-size="10" font-weight="800" letter-spacing="0.5">ZERO-TRUST OTP</text>
+
+      <text x="200" y="16" fill="#FFFAFA" fill-opacity="0.4" font-family="-apple-system, BlinkMacSystemFont, 'Inter', sans-serif" font-size="11">Expires 12m</text>
+
+      <!-- Masked Code Pin -->
+      <g transform="translate(0, 42)">
+        <circle cx="15" cy="12" r="5" fill="#FFFAFA" fill-opacity="0.8" />
+        <circle cx="45" cy="12" r="5" fill="#FFFAFA" fill-opacity="0.8" />
+        <circle cx="75" cy="12" r="5" fill="#FFFAFA" fill-opacity="0.8" />
+        <circle cx="105" cy="12" r="5" fill="#FFFAFA" fill-opacity="0.8" />
+        <circle cx="135" cy="12" r="5" fill="#FFFAFA" fill-opacity="0.8" />
+        <circle cx="165" cy="12" r="5" fill="#FFFAFA" fill-opacity="0.8" />
+
+        <rect x="195" y="0" width="76" height="25" rx="12" fill="#ffffff" fill-opacity="0.08" stroke="url(#glass-stroke)" stroke-width="1" />
+        <text x="233" y="16" text-anchor="middle" fill="#FFFAFA" font-family="-apple-system, BlinkMacSystemFont, 'Inter', sans-serif" font-size="10" font-weight="600">Reveal</text>
+      </g>
+
+      <text x="0" y="86" fill="#FFFAFA" fill-opacity="0.4" font-family="-apple-system, BlinkMacSystemFont, 'Inter', sans-serif" font-size="10">Keyed SHA-256 Custody Challenge</text>
+    </g>
+  </g>
+</svg>

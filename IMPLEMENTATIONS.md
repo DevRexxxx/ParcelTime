@@ -32,6 +32,7 @@ This document serves as the **Single Source of Truth (SSoT)** for all architectu
 - **Migrated to `bcryptjs` for Universal Portability:** Replaced with pure JavaScript `bcryptjs` (`^2.4.3`) in [`apps/api/src/modules/auth/auth.service.ts`](file:///d:/Projects/ParcelTime/apps/api/src/modules/auth/auth.service.ts) and [`apps/api/prisma/seed.ts`](file:///d:/Projects/ParcelTime/apps/api/prisma/seed.ts) adhering to specification (`ParcelTime_Idea.md`: *"Argon2id or bcrypt"*), guaranteeing 100% platform-independent execution across Node 18, 20, 22, and 24 on Linux, macOS, and Windows.
 - **Zero-Native Container Resilience:** Server now boots instantaneously on port 3001 without native compilation steps, ensuring zero-downtime container cold starts.
 - **Full Verification Suite:** 4/4 typecheck packages pass (`tsc --noEmit`), 21/21 automated Vitest tests pass across 6 test suites, and container build verified locally and remotely.
+- **2030 Spatial Marketing Banner Suite:** Generated and integrated high-fidelity marketing assets ([`docs/assets/hero-banner.jpg`](file:///d:/Projects/ParcelTime/docs/assets/hero-banner.jpg) and vector [`docs/assets/hero-banner.svg`](file:///d:/Projects/ParcelTime/docs/assets/hero-banner.svg)) depicting the zero-gravity translucent glassmorphic smart parcel cube wrapped in dual cyan/neon-orange fiber laser beams with floating VisionOS telemetry cards, linked to the live production deployment.
 
 ---
 
