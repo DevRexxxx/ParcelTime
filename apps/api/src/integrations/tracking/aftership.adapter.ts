@@ -22,7 +22,7 @@ export class AftershipAdapter implements TrackingProvider {
     };
   }
 
-  async getTracking(providerTrackingId: string) {
+  async getTracking(_providerTrackingId: string) {
     return {
       status: ShipmentExternalStatus.IN_TRANSIT,
       events: [

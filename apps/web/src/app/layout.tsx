@@ -5,6 +5,12 @@ export const metadata: Metadata = {
   title: 'ParcelTime — 2030 Spatial Logistics & Parcel Management',
   description:
     'A futuristic residential parcel reception and scheduled-delivery intelligence platform for modern gated communities.',
+  icons: {
+    icon: '/icon.svg',
+    shortcut: '/icon.svg',
+    apple: '/icon.svg',
+  },
+  manifest: '/manifest.json',
 };
 
 export default function RootLayout({

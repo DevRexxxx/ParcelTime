@@ -8,8 +8,6 @@ import {
   ResidentHoldSchema,
   ParcelClass,
   FulfillmentMode,
-  ParcelStatus,
-  SlotInstanceStatus,
 } from '@parceltime/shared';
 import { hashOtp } from '../modules/tasks/task.service';
 

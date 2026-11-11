@@ -104,7 +104,7 @@ export class GmailParser {
 
     // 3. Extract Estimated Delivery Date if present
     let estimatedDeliveryAt: string | undefined;
-    const dateMatch = text.match(/(?:arriving|expected(?:\s*by)?|delivery(?:\s*by)?)\s*[:\-]?\s*([A-Za-z]{3,9}\s+[0-9]{1,2}(?:st|nd|rd|th)?(?:,?\s+[0-9]{4})?)/i);
+    const dateMatch = text.match(/(?:arriving|expected(?:\s*by)?|delivery(?:\s*by)?)\s*[:-]?\s*([A-Za-z]{3,9}\s+[0-9]{1,2}(?:st|nd|rd|th)?(?:,?\s+[0-9]{4})?)/i);
     if (dateMatch) {
       try {
         const parsed = new Date(dateMatch[1]);

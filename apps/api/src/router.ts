@@ -31,6 +31,7 @@ export function createRouter() {
   router.use('/notifications', notificationRouter);
   router.use('/reports', reportRouter);
   router.use('/audit-logs', auditRouter);
+  router.use('/audit', auditRouter);
   router.use('/shipments', shipmentRouter);
   router.use('/integrations', integrationRouter);
 

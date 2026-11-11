@@ -1,9 +1,8 @@
-import { Request, Response, NextFunction } from 'express';
+import { Response, NextFunction } from 'express';
 import { AuthenticatedRequest } from '../../middleware/authenticate';
 import { prisma } from '../../lib/prisma';
 import { Errors } from '../../lib/errors';
 import {
-  CreateSocietySchema,
   UpdateSocietySettingsSchema,
   CreateTowerSchema,
   CreateUnitSchema,

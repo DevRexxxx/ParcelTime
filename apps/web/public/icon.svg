@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <radialGradient id="bgGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#FF5D00" stop-opacity="0.3" />
+      <stop offset="100%" stop-color="#0D0101" stop-opacity="0" />
+    </radialGradient>
+    <linearGradient id="boxTop" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FF7A29" />
+      <stop offset="100%" stop-color="#FF5D00" />
+    </linearGradient>
+    <linearGradient id="boxLeft" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#E04D00" />
+      <stop offset="100%" stop-color="#A83800" />
+    </linearGradient>
+    <linearGradient id="boxRight" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FF6B1A" />
+      <stop offset="100%" stop-color="#C74400" />
+    </linearGradient>
+    <linearGradient id="tapeGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFFAFA" />
+      <stop offset="100%" stop-color="#9333EA" />
+    </linearGradient>
+    <filter id="neonBlur" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="8" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- Background Base -->
+  <rect width="512" height="512" rx="128" fill="#0D0101" />
+  <rect width="512" height="512" rx="128" fill="url(#bgGlow)" />
+  <rect width="508" height="508" x="2" y="2" rx="126" fill="none" stroke="#FF5D00" stroke-opacity="0.25" stroke-width="4" />
+
+  <!-- Isometric Parcel Cube -->
+  <!-- Top Face -->
+  <polygon points="256,120 380,186 256,252 132,186" fill="url(#boxTop)" />
+  
+  <!-- Left Face -->
+  <polygon points="132,186 256,252 256,386 132,320" fill="url(#boxLeft)" />
+  
+  <!-- Right Face -->
+  <polygon points="256,252 380,186 380,320 256,386" fill="url(#boxRight)" />
+
+  <!-- Futuristic Holographic Tape Line -->
+  <polygon points="256,120 270,127 150,196 136,188" fill="url(#tapeGlow)" opacity="0.9" />
+  <polygon points="256,120 242,127 366,196 380,188" fill="url(#tapeGlow)" opacity="0.9" />
+  <polygon points="250,255 262,255 262,386 250,386" fill="url(#tapeGlow)" opacity="0.85" />
+
+  <!-- Center Verification Sparkle / Spatial Node -->
+  <circle cx="256" cy="252" r="10" fill="#FFFAFA" filter="url(#neonBlur)" />
+  <circle cx="256" cy="252" r="5" fill="#3B82F6" />
+</svg>

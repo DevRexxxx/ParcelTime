@@ -1,5 +1,5 @@
 import { prisma } from '../../lib/prisma';
-import { IntegrationProvider, IntegrationStatus, ShipmentDiscoverySource, ShipmentExternalStatus, ShipmentInternalStatus } from '@parceltime/shared';
+import { IntegrationProvider, IntegrationStatus, ShipmentDiscoverySource } from '@parceltime/shared';
 import { GmailParser, ParsedEmailShipment } from './gmail.parser';
 
 export class GmailAdapter {

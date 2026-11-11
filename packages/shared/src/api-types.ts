@@ -10,7 +10,6 @@ import {
   SocietyStatus,
   AssignmentMode,
   PickupRequestStatus,
-  OtpChallengeStatus,
   FulfillmentMode,
   ParcelClass,
 } from './enums';

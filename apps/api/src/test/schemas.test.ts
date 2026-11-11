@@ -3,7 +3,6 @@ import {
   VerifyOtpSchema,
   RegisterParcelSchema,
   BookSlotSchema,
-  CreateSocietySchema,
 } from '@parceltime/shared';
 
 describe('Validation Schemas', () => {

@@ -3,13 +3,11 @@ import { Errors } from '../../lib/errors';
 import {
   ParcelStatus,
   RegisterParcelSchema,
-  NotificationCategory,
   PickupRequestStatus,
   VerificationMethod,
   ReportDamageDisputeSchema,
 } from '@parceltime/shared';
 import { z } from 'zod';
-import { v4 as uuidv4 } from 'uuid';
 import { writeAuditLog } from '../audit/audit.service';
 
 // Allowed state transitions

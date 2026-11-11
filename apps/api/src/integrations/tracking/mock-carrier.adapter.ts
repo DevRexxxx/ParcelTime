@@ -1,4 +1,4 @@
-import { TrackingProvider, NormalizedTrackingEvent } from './tracking-provider.interface';
+import { TrackingProvider } from './tracking-provider.interface';
 import { ShipmentExternalStatus } from '@parceltime/shared';
 
 export class MockCarrierAdapter implements TrackingProvider {
@@ -20,7 +20,7 @@ export class MockCarrierAdapter implements TrackingProvider {
     };
   }
 
-  async getTracking(providerTrackingId: string) {
+  async getTracking(_providerTrackingId: string) {
     return {
       status: ShipmentExternalStatus.OUT_FOR_DELIVERY,
       events: [

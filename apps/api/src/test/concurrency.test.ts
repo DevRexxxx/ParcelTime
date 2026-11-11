@@ -3,10 +3,10 @@ import { describe, it, expect } from 'vitest';
 describe('Slot Booking Concurrency & Invariants', () => {
   it('guarantees that when remaining capacity is 1, only one concurrent booking succeeds', async () => {
     // Model atomic capacity reservation simulation
-    let slotCapacity = 10;
+    const slotCapacity = 10;
     let bookedCount = 9; // Only 1 spot remaining!
 
-    const bookSlotAtomic = async (requestId: string): Promise<{ success: boolean; error?: string }> => {
+    const bookSlotAtomic = async (_requestId: string): Promise<{ success: boolean; error?: string }> => {
       // Simulate atomic check-and-increment (like Prisma update with where condition)
       if (bookedCount >= slotCapacity) {
         return { success: false, error: 'SLOT_FULL' };

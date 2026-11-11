@@ -73,7 +73,7 @@ export async function forgotPassword(req: Request, res: Response, next: NextFunc
 
 export async function resetPassword(req: Request, res: Response, next: NextFunction) {
   try {
-    const _data = ResetPasswordSchema.parse(req.body);
+    ResetPasswordSchema.parse(req.body);
     // Reset password logic
     res.json({ message: 'Password reset successful' });
   } catch (e) {

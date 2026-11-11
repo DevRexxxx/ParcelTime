@@ -1,6 +1,6 @@
 import { PrismaClient, UserRole, ParcelStatus, SlotInstanceStatus, TaskStatus, DeliveryScheduleStatus } from '@prisma/client';
 import bcrypt from 'bcryptjs';
-import crypto from 'crypto';
+import * as crypto from 'crypto';
 import dayjs from 'dayjs';
 
 const prisma = new PrismaClient();

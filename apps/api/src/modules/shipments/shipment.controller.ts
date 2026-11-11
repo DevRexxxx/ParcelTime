@@ -1,6 +1,6 @@
 import { Response, NextFunction } from 'express';
 import { AuthenticatedRequest } from '../../middleware/authenticate';
-import { CreateManualShipmentSchema, MatchShipmentToParcelSchema, ShipmentQuerySchema } from '@parceltime/shared';
+import { CreateManualShipmentSchema, MatchShipmentToParcelSchema } from '@parceltime/shared';
 import { ShipmentService } from './shipment.service';
 
 export async function createManualShipment(
