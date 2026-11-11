@@ -12,7 +12,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/v2.2.0-FF5D00?style=flat-square&label=version" alt="v2.2.0" />
+  <img src="https://img.shields.io/badge/v2.3.0-FF5D00?style=flat-square&label=version" alt="v2.3.0" />
   <img src="https://img.shields.io/badge/turborepo-blue?style=flat-square&logo=turborepo&label=monorepo" alt="Turborepo" />
   <img src="https://img.shields.io/badge/14-black?style=flat-square&logo=next.js&label=next.js" alt="Next.js 14" />
   <img src="https://img.shields.io/badge/18-61dafb?style=flat-square&logo=react&label=react" alt="React 18" />
@@ -27,6 +27,9 @@
 <p align="center">
   <a href="https://parceltimeweb-production.up.railway.app/" target="_blank">
     <img src="https://img.shields.io/badge/🚀_Live_Demo-parceltimeweb--production.up.railway.app-FF5D00?style=for-the-badge&logo=railway&logoColor=white" alt="Live Demo" />
+  </a>
+  <a href="https://parceltimeweb-production.up.railway.app/redesign.html" target="_blank">
+    <img src="https://img.shields.io/badge/✨_Redesign_Prototype-redesign.html-22D3EE?style=for-the-badge&logo=figma&logoColor=white" alt="Redesign Prototype" />
   </a>
 </p>
 
@@ -103,6 +106,16 @@ Every transition is permanently recorded in an **append-only audit log**.
 - **Hybrid fulfillment** — Society-configurable: delivery-only, pickup-only, or hybrid
 - **Intelligent slot scoring** — Same-unit consolidation (+50), tower clustering (+25), evening window (+15)
 - **Pilot KPIs** — Consolidation rate, median dwell time, first-attempt handover success, intake speed
+
+### 📱 Residential UI/UX Redesign (v2.3.0)
+
+- **Plain Human Terminology** — Replaced speculative jargon with intuitive everyday words: **Home**, **Parcels**, **Schedule**, and **Assistant**.
+- **Action-First Hierarchy** — Immediate, contextual card CTAs: **"Schedule delivery"** for gate-waiting parcels, and **"View OTP"** for in-transit parcels.
+- **4-Step Labeled Progress Tracker** — Clear visual journey: `Arrived` → `Scheduled` → `Out for delivery` → `Delivered`, plus an animated live ETA strip for active runs.
+- **Tap-to-Reveal OTP Bottom Sheet** — Shielded behind a blur toggle with a 5-minute expiry countdown, 15-second auto-blur timeout, and clipboard copy. Codes never leak into chat text.
+- **Dual-Mode Responsive Layout** — Persistent left sidebar on desktop ($\ge 1024\text{px}$), strictly swapping to a touch-optimized bottom bar on mobile ($< 1024\text{px}$).
+- **Dedicated Notification Drawer** — Replaces repetitive activity feeds with a clean slide-out drawer featuring unread badges and relative timestamps.
+- **Interactive State Switcher** — Preview and test all 4 core UX states (Active Parcels, Loading Skeletons, Empty State, Error/Offline) on demand at [`/redesign.html`](https://parceltimeweb-production.up.railway.app/redesign.html).
 
 ### 👥 5-Tier Role Security
 
@@ -399,33 +412,44 @@ pnpm build       # Production build (shared → api → web)
 
 ## Design System
 
-Dark spatial interface inspired by Apple VisionOS, Linear, and modern SaaS:
+ParcelTime offers dual adaptive themes with WCAG AA compliance (4.5:1 contrast), touch-friendly 44px tap targets, and smooth micro-interactions:
 
-| Token | Value | Usage |
-|---|---|---|
-| `--bg-pure-black` | `#0D0101` | Background |
-| `--primary-orange` | `#FF5D00` | Accents, CTAs, active states |
-| `--accent-purple` | `#9333EA` | Ambient violet glow |
-| `--accent-blue` | `#3B82F6` | Spatial blue accent |
-| `--text-primary` | `#FFFAFA` | Primary text |
-| `--text-muted` | `#A19999` | Secondary text |
-| `--radius-card` | `24–32px` | Card curvature |
+### Color System & Themes
 
-**Signatures** — Subtle 40px grid at 6–8% opacity · Ambient radial corner glows · Glassmorphism panels with `backdrop-blur-2xl` · Animated neon gradient input border (`#FF5D00` → `#9333EA` → `#3B82F6`) · Confetti on OTP handover
+| Token / Layer | Midnight Aurora (Dark) | Fresh Residential (Light) | Role |
+|---|---|---|---|
+| **Background** | `#0B1020` → `#141B34` | `#F6F8FB` → `#EAF2FF` | Viewport gradient background |
+| **Surface** | `#171E3A` | `#FFFFFF` | Floating card surfaces |
+| **Border** | `#2A3358` | `#E2E8F0` | Structural card borders |
+| **Primary Text** | `#E8ECFF` | `#0F172A` | High-contrast headings and body |
+| **Muted Text** | `#9AA4CF` | `#64748B` | Secondary details, timestamps, IDs |
+| **Primary Gradient** | `#6366F1` → `#22D3EE` | `#2563EB` → `#06B6D4` | High-priority CTAs, active nav tab |
+| **Accent** | `#A78BFA` | `#10B981` | Accent highlights & badges |
+
+### Semantic Status Colors
+
+| State | Solid Color | Chip Gradient | Description |
+|---|---|---|---|
+| **Waiting at gate** | `#F59E0B` | `#FBBF24` → `#F59E0B` | Inbound intake held in vault; awaiting resident booking |
+| **Scheduled** | `#3B82F6` | `#60A5FA` → `#3B82F6` | Delivery window confirmed by resident |
+| **Out for delivery** | `#8B5CF6` | `#A78BFA` → `#7C3AED` | Executive dispatched with parcel; active ETA countdown |
+| **Delivered** | `#22C55E` | `#4ADE80` → `#16A34A` | Terminal state; completed via OTP or verified pickup |
+| **Issue / Expired** | `#EF4444` | `#F87171` → `#DC2626` | Failed attempt, expired OTP, or dispute |
 
 ---
 
-## Demo Accounts
+## Demo Accounts & Seed Data
 
-Seed data (`pnpm db:seed`) provisions **Greenwood Palms Residences**:
+The database seed (`pnpm db:seed`) is **100% idempotent** with reverse-dependency teardown, provisioning **Greenwood Palms Residences**:
 
-| Role | Email | Password |
-|---|---|---|
-| Resident | `priya.sharma@gmail.com` | `ParcelTime@2026` |
-| Executive | `rajesh.exec@greenwood.in` | `ParcelTime@2026` |
-| Reception | `reception@greenwood.in` | `ParcelTime@2026` |
-| Society Admin | `admin@greenwood.in` | `ParcelTime@2026` |
-| Platform Admin | `platform@parceltime.in` | `ParcelTime@2026` |
+| Role | Email | Password | Context & Seeded Parcels |
+|---|---|---|---|
+| **Resident** | `priya.sharma@gmail.com` | `ParcelTime@2026` | Unit A-102 (Owner) • Has 5 seeded parcels: `PT-8942` (Amazon, waiting), `PT-5519` (Myntra, waiting — for consolidation), `PT-9104` (Blue Dart, scheduled tomorrow), `PT-7621` (Delhivery, out for delivery with OTP `482910`), `PT-6310` (DTDC, delivered). Connected Gmail integration. |
+| **Resident** | `arun.patel@gmail.com` | `ParcelTime@2026` | Unit B-302 (Tenant) • Has `PT-3301` (Ekart Logistics, waiting at gate). |
+| **Delivery Executive** | `rajesh.exec@greenwood.in` | `ParcelTime@2026` | Active shift courier • Assigned task for `PT-7621` approaching Tower A. |
+| **Reception Staff** | `reception@greenwood.in` | `ParcelTime@2026` | Gate 1 Concierge Desk • Fast barcode check-in and vault storage access. |
+| **Society Admin** | `admin@greenwood.in` | `ParcelTime@2026` | Estate Manager • Governance, slot templates, override review, audit log. |
+| **Platform Admin** | `platform@parceltime.in` | `ParcelTime@2026` | Multi-society headquarters governance. |
 
 ---
 
@@ -433,6 +457,7 @@ Seed data (`pnpm db:seed`) provisions **Greenwood Palms Residences**:
 
 | Version | Date | Highlights |
 |---|---|---|
+| **2.3.0** | 2026-11-12 | **Residential UI/UX Redesign & Seed Invariant Overhaul:** (1) Interactive standalone prototype ([`/redesign.html`](https://parceltimeweb-production.up.railway.app/redesign.html)) with dual-theme system (Midnight Aurora dark / Fresh Residential light), plain language navigation (Home, Parcels, Schedule, Assistant), 4-step progress tracker with visible step labels (`Arrived` → `Scheduled` → `Out for delivery` → `Delivered`), tap-to-reveal OTP sheet with 5-minute countdown and auto-hide, dedicated notification drawer, and 4-state switcher (Active, Loading, Empty, Error/Offline); (2) 100% idempotent database seeding (`pnpm db:seed`) with reverse-dependency teardown, strict Prisma enum type-safety, and complete persona alignment with mock data; (3) Monorepo-wide zero-warning linting across all packages and vector SVG app icon metadata (`/icon.svg`). 54 tests / 8 suites. |
 | **2.2.0** | 2026-11-11 | USIE live tracking architecture — multi-carrier webhooks (HMAC-SHA256), Gmail dispatch parsing, zero-trust custody invariant, cross-resident conflict detection, bidirectional auto-linking, P2002 race condition handling. 54 tests / 8 suites. |
 | **2.1.0** | 2026-11-10 | Smart consolidation, hybrid fulfillment modes, intelligent slot scoring, pilot KPIs & storage ageing, AI concierge natural language dispatch. |
 | **2.0.5** | 2026-11-10 | Replaced Argon2id with bcryptjs for zero-native-addon container compatibility (Node 24 / Railway / Alpine). |
