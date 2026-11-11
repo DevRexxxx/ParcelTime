@@ -199,9 +199,14 @@ body{background:var(--bg);color:var(--text);display:flex;min-height:100dvh}
 .card-location svg{width:14px;height:14px;flex-shrink:0;color:var(--text-muted)}
 
 /* ── 4-Step Tracker ──────────────────────────────────── */
-.tracker{display:flex;align-items:center;margin-bottom:16px;padding:0 4px}
-.tracker-step{display:flex;align-items:center;gap:6px;flex:1;position:relative}
-.tracker-step:last-child{flex:0}
+.tracker{display:flex;align-items:flex-start;justify-content:space-between;margin:16px 0 18px;position:relative}
+.tracker-step{display:flex;flex-direction:column;align-items:center;flex:1;position:relative;text-align:center}
+.tracker-step:not(:last-child)::after{
+  content:'';position:absolute;top:11px;left:50%;width:100%;height:2px;
+  background:var(--border);z-index:0;
+}
+.tracker-step.done:not(:last-child)::after{background:var(--status-delivered)}
+.tracker-step.active:not(:last-child)::after{background:linear-gradient(90deg,var(--status-delivered),var(--status-out))}
 .step-dot{
   width:22px;height:22px;border-radius:50%;border:2px solid var(--border);
   display:flex;align-items:center;justify-content:center;flex-shrink:0;
@@ -212,10 +217,18 @@ body{background:var(--bg);color:var(--text);display:flex;min-height:100dvh}
 .tracker-step.done .step-dot svg{display:block;color:#fff}
 .tracker-step.active .step-dot{border-color:var(--status-out);background:var(--status-out);box-shadow:0 0 0 4px rgba(139,92,246,.2)}
 .tracker-step.active .step-dot svg{display:block;color:#fff}
-.step-line{flex:1;height:2px;background:var(--border);margin:0 -2px;position:relative;z-index:0}
-.tracker-step.done .step-line{background:var(--status-delivered)}
-.tracker-step.active .step-line{background:linear-gradient(90deg,var(--status-delivered),var(--border))}
-.step-label{display:none}
+.step-label{font-size:11px;font-weight:500;color:var(--text-muted);margin-top:6px;line-height:1.2}
+.tracker-step.done .step-label,.tracker-step.active .step-label{color:var(--text);font-weight:600}
+
+/* State Switcher Bar */
+.state-switcher{display:flex;align-items:center;gap:6px;margin-bottom:20px;padding:4px;border-radius:var(--radius-sm);background:var(--input-bg);border:1px solid var(--border);overflow-x:auto}
+.state-pill{padding:6px 12px;border-radius:6px;font-size:12px;font-weight:500;color:var(--text-muted);transition:all var(--transition);white-space:nowrap}
+.state-pill:hover{color:var(--text)}
+.state-pill.active{background:var(--surface);color:var(--text);box-shadow:var(--shadow-sm);font-weight:600}
+
+/* Offline Banner */
+.offline-banner{display:flex;align-items:center;gap:8px;padding:10px 14px;border-radius:var(--radius-sm);background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.25);color:var(--status-issue);font-size:12px;font-weight:500;margin-bottom:16px}
+.offline-banner svg{width:16px;height:16px;flex-shrink:0}
 
 /* ETA strip */
 .eta-strip{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:var(--radius-sm);background:rgba(139,92,246,.08);margin-bottom:14px}
@@ -482,130 +495,206 @@ body{background:var(--bg);color:var(--text);display:flex;min-height:100dvh}
   <!-- ── HOME VIEW ── -->
   <div class="home-view active-view" id="view-home">
 
-    <!-- Needs action -->
-    <div class="section-label">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-      Needs your action · <span class="count">2</span>
+    <!-- State Switcher Bar (Test All 4 Product States) -->
+    <div class="state-switcher" role="tablist" aria-label="Demo state switcher">
+      <button class="state-pill active" onclick="switchState('active')" id="pill-active">Active Parcels (3)</button>
+      <button class="state-pill" onclick="switchState('loading')" id="pill-loading">Loading State</button>
+      <button class="state-pill" onclick="switchState('empty')" id="pill-empty">Empty State</button>
+      <button class="state-pill" onclick="switchState('error')" id="pill-error">Error / Offline</button>
     </div>
 
-    <!-- Card 1: Amazon — Waiting -->
-    <div class="parcel-card" id="card-8942">
-      <div class="card-top">
-        <div class="card-courier">
-          <div class="courier-icon amazon">A</div>
-          <div class="courier-info">
-            <div class="name">Amazon Logistics</div>
-            <div class="id">PT-8942</div>
+    <!-- Offline banner (auto triggers if navigator.onLine is false or toggled) -->
+    <div class="offline-banner" id="offline-banner" style="display:none">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="1" y1="1" x2="23" y2="23"/><path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55"/><path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39"/><path d="M10.71 5.05A16 16 0 0 1 22.58 9"/><path d="M1.42 9a15.91 15.91 0 0 1 4.7-2.88"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>
+      <span>You are offline. Showing cached parcel data from Gate 1.</span>
+    </div>
+
+    <!-- Container: Active Live Parcels State -->
+    <div id="state-active-container">
+      <!-- Needs action -->
+      <div class="section-label">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        Needs your action · <span class="count">2</span>
+      </div>
+
+      <!-- Card 1: Amazon — Waiting -->
+      <div class="parcel-card" id="card-8942">
+        <div class="card-top">
+          <div class="card-courier">
+            <div class="courier-icon amazon">A</div>
+            <div class="courier-info">
+              <div class="name">Amazon Logistics</div>
+              <div class="id">PT-8942</div>
+            </div>
+          </div>
+          <span class="status-chip waiting" role="status"><span class="dot" aria-hidden="true"></span>Waiting at gate</span>
+        </div>
+        <div class="card-location">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          Gate 1 Vault · Shelf A
+        </div>
+        <div class="tracker" aria-label="Status: Arrived at gate">
+          <div class="tracker-step done">
+            <div class="step-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+            <span class="step-label">Arrived</span>
+          </div>
+          <div class="tracker-step">
+            <div class="step-dot"></div>
+            <span class="step-label">Scheduled</span>
+          </div>
+          <div class="tracker-step">
+            <div class="step-dot"></div>
+            <span class="step-label">Out for delivery</span>
+          </div>
+          <div class="tracker-step">
+            <div class="step-dot"></div>
+            <span class="step-label">Delivered</span>
           </div>
         </div>
-        <span class="status-chip waiting" role="status"><span class="dot" aria-hidden="true"></span>Waiting at gate</span>
+        <div class="card-actions">
+          <button class="btn btn-primary" onclick="openScheduleSheet('PT-8942','Amazon Logistics')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            Schedule delivery
+          </button>
+          <button class="btn btn-secondary">Details</button>
+        </div>
       </div>
-      <div class="card-location">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
-        Gate 1 Vault · Shelf A
-      </div>
-      <div class="tracker" aria-label="Status: Arrived at gate">
-        <div class="tracker-step done"><div class="step-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><div class="step-line"></div></div>
-        <div class="tracker-step"><div class="step-dot"></div><div class="step-line"></div></div>
-        <div class="tracker-step"><div class="step-dot"></div><div class="step-line"></div></div>
-        <div class="tracker-step"><div class="step-dot"></div></div>
-      </div>
-      <div class="card-actions">
-        <button class="btn btn-primary" onclick="openScheduleSheet('PT-8942','Amazon Logistics')">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-          Schedule delivery
-        </button>
-        <button class="btn btn-secondary">Details</button>
-      </div>
-    </div>
 
-    <!-- Card 2: Myntra — Waiting -->
-    <div class="parcel-card" id="card-5519">
-      <div class="card-top">
-        <div class="card-courier">
-          <div class="courier-icon myntra">M</div>
-          <div class="courier-info">
-            <div class="name">Myntra Fashion</div>
-            <div class="id">PT-5519</div>
+      <!-- Card 2: Myntra — Waiting -->
+      <div class="parcel-card" id="card-5519">
+        <div class="card-top">
+          <div class="card-courier">
+            <div class="courier-icon myntra">M</div>
+            <div class="courier-info">
+              <div class="name">Myntra Fashion</div>
+              <div class="id">PT-5519</div>
+            </div>
+          </div>
+          <span class="status-chip waiting" role="status"><span class="dot" aria-hidden="true"></span>Waiting at gate</span>
+        </div>
+        <div class="card-location">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          Gate 1 Vault · Shelf B
+        </div>
+        <div class="tracker" aria-label="Status: Arrived at gate">
+          <div class="tracker-step done">
+            <div class="step-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+            <span class="step-label">Arrived</span>
+          </div>
+          <div class="tracker-step">
+            <div class="step-dot"></div>
+            <span class="step-label">Scheduled</span>
+          </div>
+          <div class="tracker-step">
+            <div class="step-dot"></div>
+            <span class="step-label">Out for delivery</span>
+          </div>
+          <div class="tracker-step">
+            <div class="step-dot"></div>
+            <span class="step-label">Delivered</span>
           </div>
         </div>
-        <span class="status-chip waiting" role="status"><span class="dot" aria-hidden="true"></span>Waiting at gate</span>
+        <div class="card-actions">
+          <button class="btn btn-primary" onclick="openScheduleSheet('PT-5519','Myntra Fashion')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            Schedule delivery
+          </button>
+          <button class="btn btn-secondary">Details</button>
+        </div>
       </div>
-      <div class="card-location">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
-        Gate 1 Vault · Shelf B
-      </div>
-      <div class="tracker" aria-label="Status: Arrived at gate">
-        <div class="tracker-step done"><div class="step-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><div class="step-line"></div></div>
-        <div class="tracker-step"><div class="step-dot"></div><div class="step-line"></div></div>
-        <div class="tracker-step"><div class="step-dot"></div><div class="step-line"></div></div>
-        <div class="tracker-step"><div class="step-dot"></div></div>
-      </div>
-      <div class="card-actions">
-        <button class="btn btn-primary" onclick="openScheduleSheet('PT-5519','Myntra Fashion')">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-          Schedule delivery
-        </button>
-        <button class="btn btn-secondary">Details</button>
-      </div>
-    </div>
 
-    <!-- Section: In progress -->
-    <div class="section-label" style="margin-top:24px">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-      In progress · <span class="count">1</span>
-    </div>
+      <!-- Section: In progress -->
+      <div class="section-label" style="margin-top:24px">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        In progress · <span class="count">1</span>
+      </div>
 
-    <!-- Card 3: Delhivery — Out for delivery -->
-    <div class="parcel-card" id="card-7621">
-      <div class="card-top">
-        <div class="card-courier">
-          <div class="courier-icon delhivery">D</div>
-          <div class="courier-info">
-            <div class="name">Delhivery</div>
-            <div class="id">PT-7621</div>
+      <!-- Card 3: Delhivery — Out for delivery -->
+      <div class="parcel-card" id="card-7621">
+        <div class="card-top">
+          <div class="card-courier">
+            <div class="courier-icon delhivery">D</div>
+            <div class="courier-info">
+              <div class="name">Delhivery</div>
+              <div class="id">PT-7621</div>
+            </div>
+          </div>
+          <span class="status-chip out" role="status"><span class="dot" aria-hidden="true"></span>Out for delivery</span>
+        </div>
+        <div class="card-location">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          With executive Rajesh Kumar
+        </div>
+        <div class="tracker" aria-label="Status: Out for delivery">
+          <div class="tracker-step done">
+            <div class="step-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+            <span class="step-label">Arrived</span>
+          </div>
+          <div class="tracker-step done">
+            <div class="step-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+            <span class="step-label">Scheduled</span>
+          </div>
+          <div class="tracker-step active">
+            <div class="step-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
+            <span class="step-label">Out for delivery</span>
+          </div>
+          <div class="tracker-step">
+            <div class="step-dot"></div>
+            <span class="step-label">Delivered</span>
           </div>
         </div>
-        <span class="status-chip out" role="status"><span class="dot" aria-hidden="true"></span>Out for delivery</span>
+        <div class="eta-strip">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          <span class="eta-text" id="eta-text">ETA ~5 min</span>
+          <div class="eta-bar"><div class="eta-fill" id="eta-fill" style="width:75%"></div></div>
+        </div>
+        <div class="card-actions">
+          <button class="btn btn-primary" onclick="openOtpSheet()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+            View OTP
+          </button>
+          <button class="btn btn-secondary">Track</button>
+        </div>
       </div>
-      <div class="card-location">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
-        With executive Rajesh Kumar
+    </div>
+
+    <!-- Container: Loading Skeletons State -->
+    <div id="state-loading-container" style="display:none">
+      <div class="section-label">Loading your parcels…</div>
+      <div class="skeleton-card" aria-hidden="true">
+        <div class="skeleton-line w-40" style="margin-bottom:12px;height:18px"></div>
+        <div class="skeleton-line w-60"></div>
+        <div class="skeleton-line w-80" style="height:32px;margin:16px 0"></div>
+        <div class="skeleton-line w-40" style="height:40px;border-radius:8px"></div>
       </div>
-      <div class="tracker" aria-label="Status: Out for delivery">
-        <div class="tracker-step done"><div class="step-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><div class="step-line"></div></div>
-        <div class="tracker-step done"><div class="step-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><div class="step-line"></div></div>
-        <div class="tracker-step active"><div class="step-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div><div class="step-line"></div></div>
-        <div class="tracker-step"><div class="step-dot"></div></div>
+      <div class="skeleton-card" aria-hidden="true">
+        <div class="skeleton-line w-40" style="margin-bottom:12px;height:18px"></div>
+        <div class="skeleton-line w-60"></div>
+        <div class="skeleton-line w-80" style="height:32px;margin:16px 0"></div>
+        <div class="skeleton-line w-40" style="height:40px;border-radius:8px"></div>
       </div>
-      <div class="eta-strip">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-        <span class="eta-text" id="eta-text">ETA ~5 min</span>
-        <div class="eta-bar"><div class="eta-fill" id="eta-fill" style="width:75%"></div></div>
+    </div>
+
+    <!-- Container: Empty State -->
+    <div id="state-empty-container" style="display:none">
+      <div class="empty-state" style="border:1px dashed var(--border);border-radius:var(--radius-md);background:var(--surface)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+        <h3>No parcels right now</h3>
+        <p>When a courier drops off a package at Greenwood Palms, it will appear here instantly.</p>
       </div>
-      <div class="card-actions">
-        <button class="btn btn-primary" onclick="openOtpSheet()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
-          View OTP
+    </div>
+
+    <!-- Container: Error / Offline State -->
+    <div id="state-error-container" style="display:none">
+      <div class="error-state" style="border:1px solid var(--border);border-radius:var(--radius-md);background:var(--surface)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <h3>Unable to sync with Gate 1</h3>
+        <p>Could not reach the society vault gateway. Check your internet connection.</p>
+        <button class="btn btn-primary" onclick="switchState('active')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+          Retry sync
         </button>
-        <button class="btn btn-secondary">Track</button>
       </div>
-    </div>
-
-    <!-- Loading skeleton demo -->
-    <div class="section-label" style="margin-top:24px">Loading state preview</div>
-    <div class="skeleton-card" aria-hidden="true">
-      <div class="skeleton-line w-60"></div>
-      <div class="skeleton-line w-40"></div>
-      <div class="skeleton-line w-80"></div>
-    </div>
-
-    <!-- Empty state demo -->
-    <div class="section-label" style="margin-top:16px">Empty state preview</div>
-    <div class="empty-state" style="border:1px dashed var(--border);border-radius:var(--radius-md)">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
-      <h3>No parcels right now</h3>
-      <p>When a courier drops off a package at Greenwood Palms, it will appear here.</p>
     </div>
   </div>
 
@@ -914,6 +1003,33 @@ document.addEventListener('keydown',e=>{
   if(e.key==='Escape'){closeSearch();closeNotifDrawer();closeOtpSheet();closeScheduleSheet()}
 });
 
+/* ── State Switcher (Active, Loading, Empty, Error) ── */
+function switchState(state){
+  document.querySelectorAll('.state-pill').forEach(p=>p.classList.remove('active'));
+  const pill=document.getElementById('pill-'+state);
+  if(pill) pill.classList.add('active');
+
+  const activeC = document.getElementById('state-active-container');
+  const loadingC = document.getElementById('state-loading-container');
+  const emptyC = document.getElementById('state-empty-container');
+  const errorC = document.getElementById('state-error-container');
+  const offlineB = document.getElementById('offline-banner');
+
+  activeC.style.display = state==='active' ? 'block' : 'none';
+  loadingC.style.display = state==='loading' ? 'block' : 'none';
+  emptyC.style.display = state==='empty' ? 'block' : 'none';
+  errorC.style.display = state==='error' ? 'block' : 'none';
+  offlineB.style.display = state==='error' ? 'flex' : (navigator.onLine ? 'none' : 'flex');
+}
+
+window.addEventListener('online', ()=>{
+  const offlineB = document.getElementById('offline-banner');
+  if(!document.getElementById('pill-error').classList.contains('active')) offlineB.style.display = 'none';
+});
+window.addEventListener('offline', ()=>{
+  document.getElementById('offline-banner').style.display = 'flex';
+});
+
 /* ── ETA Countdown ── */
 let etaSeconds=300;
 setInterval(()=>{
@@ -950,3 +1066,4 @@ document.getElementById('chat-input').addEventListener('keydown',e=>{if(e.key===
 </script>
 </body>
 </html>
+
