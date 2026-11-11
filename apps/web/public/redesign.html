@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ParcelTime — Greenwood Palms</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ── CSS Reset ───────────────────────────────────────── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-family:'Inter',system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased;scroll-behavior:smooth}
+body{min-height:100dvh;overflow-x:hidden}
+button{cursor:pointer;font:inherit;border:none;background:none}
+a{color:inherit;text-decoration:none}
+img{display:block;max-width:100%}
+ul,ol{list-style:none}
+input{font:inherit;border:none;outline:none;background:none}
+
+/* ── Design Tokens ───────────────────────────────────── */
+:root{
+  --font-tabular:tabular-nums;
+  --radius-sm:8px;--radius-md:16px;--radius-lg:24px;--radius-full:9999px;
+  --shadow-sm:0 1px 3px rgba(0,0,0,.06);
+  --shadow-md:0 4px 12px rgba(0,0,0,.08);
+  --shadow-lg:0 8px 24px rgba(0,0,0,.12);
+  --transition:180ms ease;
+  --nav-width:260px;
+  --status-waiting:#F59E0B;--status-waiting-grad:linear-gradient(135deg,#FBBF24,#F59E0B);
+  --status-scheduled:#3B82F6;--status-scheduled-grad:linear-gradient(135deg,#60A5FA,#3B82F6);
+  --status-out:#8B5CF6;--status-out-grad:linear-gradient(135deg,#A78BFA,#7C3AED);
+  --status-delivered:#22C55E;--status-delivered-grad:linear-gradient(135deg,#4ADE80,#16A34A);
+  --status-issue:#EF4444;--status-issue-grad:linear-gradient(135deg,#F87171,#DC2626);
+}
+
+/* Dark theme (Midnight Aurora) */
+[data-theme="dark"]{
+  --bg:linear-gradient(180deg,#0B1020,#141B34);
+  --bg-flat:#0B1020;
+  --surface:#171E3A;--surface-hover:#1E2649;
+  --border:#2A3358;--border-focus:#6366F1;
+  --text:#E8ECFF;--text-muted:#9AA4CF;--text-inv:#0F172A;
+  --primary-grad:linear-gradient(135deg,#6366F1,#22D3EE);
+  --primary-solid:#6366F1;--primary-hover:#818CF8;
+  --accent:#A78BFA;
+  --overlay:rgba(11,16,32,.7);
+  --skeleton:#1E2649;--skeleton-shine:#2A3358;
+  --shadow-card:0 2px 8px rgba(0,0,0,.3);
+  --input-bg:#111730;
+  color-scheme:dark;
+}
+
+/* Light theme (Fresh Residential) */
+[data-theme="light"]{
+  --bg:linear-gradient(180deg,#F6F8FB,#EAF2FF);
+  --bg-flat:#F6F8FB;
+  --surface:#FFFFFF;--surface-hover:#F1F5F9;
+  --border:#E2E8F0;--border-focus:#2563EB;
+  --text:#0F172A;--text-muted:#64748B;--text-inv:#FFFFFF;
+  --primary-grad:linear-gradient(135deg,#2563EB,#06B6D4);
+  --primary-solid:#2563EB;--primary-hover:#3B82F6;
+  --accent:#10B981;
+  --overlay:rgba(0,0,0,.4);
+  --skeleton:#E2E8F0;--skeleton-shine:#F1F5F9;
+  --shadow-card:0 2px 8px rgba(0,0,0,.06);
+  --input-bg:#F1F5F9;
+  color-scheme:light;
+}
+
+/* ── Body & Layout ───────────────────────────────────── */
+body{background:var(--bg);color:var(--text);display:flex;min-height:100dvh}
+
+/* ── Sidebar (desktop ≥ 1024) ────────────────────────── */
+.sidebar{
+  position:fixed;left:0;top:0;bottom:0;width:var(--nav-width);
+  background:var(--surface);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;padding:24px 16px;z-index:50;
+  transition:transform var(--transition);
+}
+.sidebar-brand{display:flex;align-items:center;gap:10px;padding:0 8px 24px;border-bottom:1px solid var(--border);margin-bottom:16px}
+.sidebar-brand svg{width:28px;height:28px;flex-shrink:0}
+.sidebar-brand span{font-size:18px;font-weight:700;letter-spacing:-.02em}
+.sidebar-nav{display:flex;flex-direction:column;gap:4px;flex:1}
+.nav-item{
+  display:flex;align-items:center;gap:12px;padding:10px 12px;
+  border-radius:var(--radius-sm);color:var(--text-muted);
+  font-size:14px;font-weight:500;transition:all var(--transition);
+  position:relative;
+}
+.nav-item:hover{background:var(--surface-hover);color:var(--text)}
+.nav-item:focus-visible{outline:2px solid var(--border-focus);outline-offset:2px;border-radius:var(--radius-sm)}
+.nav-item.active{background:var(--primary-grad);color:#fff;font-weight:600}
+.nav-item.active svg{color:#fff}
+.nav-item svg{width:20px;height:20px;flex-shrink:0}
+.nav-badge{
+  margin-left:auto;min-width:20px;height:20px;
+  background:var(--status-issue);color:#fff;
+  font-size:11px;font-weight:700;border-radius:var(--radius-full);
+  display:flex;align-items:center;justify-content:center;padding:0 6px;
+}
+.sidebar-footer{margin-top:auto;padding-top:16px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:8px}
+.sidebar-user{display:flex;align-items:center;gap:10px;padding:8px;border-radius:var(--radius-sm)}
+.sidebar-user .avatar{width:36px;height:36px;border-radius:var(--radius-full);background:var(--primary-grad);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:#fff}
+.sidebar-user .meta{display:flex;flex-direction:column}
+.sidebar-user .meta .name{font-size:13px;font-weight:600}
+.sidebar-user .meta .unit{font-size:11px;color:var(--text-muted)}
+
+/* ── Bottom Tab Bar (mobile < 1024) ──────────────────── */
+.bottom-bar{
+  position:fixed;left:0;right:0;bottom:0;height:64px;
+  background:var(--surface);border-top:1px solid var(--border);
+  display:none;z-index:50;
+  padding:0 8px;
+}
+.bottom-bar-inner{display:flex;align-items:center;justify-content:space-around;height:100%;max-width:480px;margin:0 auto}
+.tab-item{
+  display:flex;flex-direction:column;align-items:center;gap:2px;
+  padding:6px 12px;border-radius:var(--radius-sm);color:var(--text-muted);
+  font-size:10px;font-weight:600;transition:color var(--transition);min-width:44px;min-height:44px;
+  justify-content:center;position:relative;
+}
+.tab-item svg{width:22px;height:22px}
+.tab-item.active{color:var(--primary-solid)}
+.tab-item.active::after{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:24px;height:3px;border-radius:0 0 3px 3px;background:var(--primary-grad)}
+.tab-item:focus-visible{outline:2px solid var(--border-focus);outline-offset:2px}
+.tab-badge{position:absolute;top:2px;right:4px;width:8px;height:8px;border-radius:50%;background:var(--status-issue);border:2px solid var(--surface)}
+
+/* ── Main Content ────────────────────────────────────── */
+.main{flex:1;margin-left:var(--nav-width);padding:24px 32px 32px;max-width:900px;width:100%}
+.main-inner{max-width:720px;margin:0 auto}
+
+/* ── Header row ──────────────────────────────────────── */
+.header{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;gap:12px;flex-wrap:wrap}
+.greeting h1{font-size:24px;font-weight:700;letter-spacing:-.03em;line-height:1.3}
+.greeting p{font-size:14px;color:var(--text-muted);margin-top:2px}
+.header-actions{display:flex;align-items:center;gap:8px}
+.icon-btn{
+  width:40px;height:40px;display:flex;align-items:center;justify-content:center;
+  border-radius:var(--radius-sm);border:1px solid var(--border);
+  color:var(--text-muted);transition:all var(--transition);
+  position:relative;
+}
+.icon-btn:hover{background:var(--surface-hover);color:var(--text)}
+.icon-btn:focus-visible{outline:2px solid var(--border-focus);outline-offset:2px}
+.icon-btn svg{width:18px;height:18px}
+.icon-btn .dot{position:absolute;top:8px;right:8px;width:7px;height:7px;border-radius:50%;background:var(--status-issue);border:2px solid var(--surface)}
+
+/* Theme toggle */
+.theme-toggle{overflow:hidden}
+.theme-toggle .sun,.theme-toggle .moon{transition:transform .3s,opacity .3s}
+[data-theme="dark"] .theme-toggle .sun{display:block}
+[data-theme="dark"] .theme-toggle .moon{display:none}
+[data-theme="light"] .theme-toggle .sun{display:none}
+[data-theme="light"] .theme-toggle .moon{display:block}
+
+/* ── Section headers ─────────────────────────────────── */
+.section-label{font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.section-label .count{font-variant-numeric:tabular-nums}
+
+/* ── Parcel Card ─────────────────────────────────────── */
+.parcel-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius-md);padding:20px;
+  margin-bottom:12px;transition:border-color var(--transition),box-shadow var(--transition);
+  box-shadow:var(--shadow-card);
+}
+.parcel-card:hover{border-color:var(--primary-solid)}
+.parcel-card:focus-within{border-color:var(--border-focus);box-shadow:0 0 0 3px rgba(99,102,241,.15)}
+.card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:14px}
+.card-courier{display:flex;align-items:center;gap:10px}
+.courier-icon{
+  width:40px;height:40px;border-radius:var(--radius-sm);
+  display:flex;align-items:center;justify-content:center;
+  font-weight:700;font-size:16px;flex-shrink:0;
+}
+.courier-icon.amazon{background:rgba(255,153,0,.12);color:#F59E0B}
+.courier-icon.myntra{background:rgba(236,72,153,.12);color:#EC4899}
+.courier-icon.delhivery{background:rgba(139,92,246,.12);color:#8B5CF6}
+.courier-icon.dtdc{background:rgba(34,197,94,.12);color:#22C55E}
+.courier-info .name{font-size:14px;font-weight:600;line-height:1.3}
+.courier-info .id{font-size:12px;color:var(--text-muted);font-variant-numeric:tabular-nums;margin-top:1px}
+.status-chip{
+  display:inline-flex;align-items:center;gap:5px;padding:4px 10px;
+  border-radius:var(--radius-full);font-size:11px;font-weight:600;
+  white-space:nowrap;flex-shrink:0;
+}
+.status-chip.waiting{background:rgba(245,158,11,.12);color:#F59E0B}
+.status-chip.scheduled{background:rgba(59,130,246,.12);color:#3B82F6}
+.status-chip.out{background:rgba(139,92,246,.12);color:#8B5CF6}
+.status-chip.delivered{background:rgba(34,197,94,.12);color:#22C55E}
+.status-chip .dot{width:6px;height:6px;border-radius:50%}
+.status-chip.waiting .dot{background:var(--status-waiting)}
+.status-chip.scheduled .dot{background:var(--status-scheduled)}
+.status-chip.out .dot{background:var(--status-out)}
+.status-chip.delivered .dot{background:var(--status-delivered)}
+
+/* Location row */
+.card-location{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-muted);margin-bottom:14px}
+.card-location svg{width:14px;height:14px;flex-shrink:0;color:var(--text-muted)}
+
+/* ── 4-Step Tracker ──────────────────────────────────── */
+.tracker{display:flex;align-items:center;margin-bottom:16px;padding:0 4px}
+.tracker-step{display:flex;align-items:center;gap:6px;flex:1;position:relative}
+.tracker-step:last-child{flex:0}
+.step-dot{
+  width:22px;height:22px;border-radius:50%;border:2px solid var(--border);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  background:var(--surface);transition:all var(--transition);position:relative;z-index:1;
+}
+.step-dot svg{width:12px;height:12px;display:none}
+.tracker-step.done .step-dot{border-color:var(--status-delivered);background:var(--status-delivered)}
+.tracker-step.done .step-dot svg{display:block;color:#fff}
+.tracker-step.active .step-dot{border-color:var(--status-out);background:var(--status-out);box-shadow:0 0 0 4px rgba(139,92,246,.2)}
+.tracker-step.active .step-dot svg{display:block;color:#fff}
+.step-line{flex:1;height:2px;background:var(--border);margin:0 -2px;position:relative;z-index:0}
+.tracker-step.done .step-line{background:var(--status-delivered)}
+.tracker-step.active .step-line{background:linear-gradient(90deg,var(--status-delivered),var(--border))}
+.step-label{display:none}
+
+/* ETA strip */
+.eta-strip{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:var(--radius-sm);background:rgba(139,92,246,.08);margin-bottom:14px}
+.eta-strip svg{width:16px;height:16px;color:var(--status-out);flex-shrink:0}
+.eta-strip .eta-text{font-size:12px;font-weight:600;color:var(--status-out)}
+.eta-strip .eta-bar{flex:1;height:4px;border-radius:2px;background:var(--border);overflow:hidden}
+.eta-strip .eta-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,#A78BFA,#7C3AED);transition:width 1s linear}
+
+/* Card actions */
+.card-actions{display:flex;gap:8px;flex-wrap:wrap}
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  padding:10px 18px;border-radius:var(--radius-sm);font-size:13px;font-weight:600;
+  transition:all var(--transition);min-height:44px;
+}
+.btn:focus-visible{outline:2px solid var(--border-focus);outline-offset:2px}
+.btn-primary{background:var(--primary-grad);color:#fff;box-shadow:0 2px 8px rgba(99,102,241,.3)}
+.btn-primary:hover{opacity:.9;transform:translateY(-1px)}
+.btn-secondary{background:transparent;color:var(--text);border:1px solid var(--border)}
+.btn-secondary:hover{background:var(--surface-hover);border-color:var(--text-muted)}
+.btn svg{width:16px;height:16px}
+
+/* ── OTP Bottom Sheet ────────────────────────────────── */
+.sheet-overlay{
+  position:fixed;inset:0;background:var(--overlay);z-index:100;
+  opacity:0;pointer-events:none;transition:opacity .25s;
+  display:flex;align-items:flex-end;justify-content:center;
+}
+.sheet-overlay.open{opacity:1;pointer-events:auto}
+.sheet{
+  background:var(--surface);border-radius:var(--radius-lg) var(--radius-lg) 0 0;
+  width:100%;max-width:480px;padding:20px 24px 32px;
+  transform:translateY(100%);transition:transform .3s cubic-bezier(.32,.72,0,1);
+}
+.sheet-overlay.open .sheet{transform:translateY(0)}
+.sheet-handle{width:36px;height:4px;border-radius:2px;background:var(--border);margin:0 auto 20px}
+.sheet-title{font-size:18px;font-weight:700;margin-bottom:4px}
+.sheet-subtitle{font-size:13px;color:var(--text-muted);margin-bottom:20px}
+.otp-display{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  padding:20px;border-radius:var(--radius-md);border:1px solid var(--border);
+  background:var(--input-bg);margin-bottom:16px;position:relative;
+  cursor:pointer;user-select:none;min-height:72px;
+}
+.otp-digits{font-size:32px;font-weight:700;letter-spacing:.2em;font-variant-numeric:tabular-nums;transition:filter .3s}
+.otp-digits.hidden{filter:blur(12px)}
+.otp-reveal-hint{position:absolute;display:flex;flex-direction:column;align-items:center;gap:4px;pointer-events:none;transition:opacity .3s}
+.otp-reveal-hint svg{width:24px;height:24px;color:var(--text-muted)}
+.otp-reveal-hint span{font-size:11px;color:var(--text-muted);font-weight:500}
+.otp-display.revealed .otp-reveal-hint{opacity:0}
+.otp-display.revealed .otp-digits{filter:blur(0)}
+.otp-countdown{display:flex;align-items:center;justify-content:center;gap:6px;font-size:13px;color:var(--text-muted);margin-bottom:16px}
+.otp-countdown svg{width:14px;height:14px}
+.countdown-time{font-weight:700;font-variant-numeric:tabular-nums;color:var(--status-out)}
+.otp-actions{display:flex;gap:8px}
+.otp-actions .btn{flex:1}
+
+/* ── Schedule Sheet ──────────────────────────────────── */
+.schedule-content{display:none}
+.schedule-content.active-sheet-content{display:block}
+.slot-group-label{font-size:12px;font-weight:600;color:var(--text-muted);margin-bottom:8px;margin-top:16px;text-transform:uppercase;letter-spacing:.04em}
+.slot-group-label:first-child{margin-top:0}
+.slot-chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px}
+.slot-chip{
+  padding:10px 16px;border-radius:var(--radius-sm);border:1px solid var(--border);
+  font-size:13px;font-weight:500;color:var(--text);
+  transition:all var(--transition);cursor:pointer;min-height:44px;
+  display:flex;align-items:center;
+}
+.slot-chip:hover{border-color:var(--primary-solid);background:rgba(99,102,241,.06)}
+.slot-chip.selected{border-color:var(--primary-solid);background:var(--primary-grad);color:#fff}
+.slot-chip:focus-visible{outline:2px solid var(--border-focus);outline-offset:2px}
+.fulfillment-options{display:flex;gap:8px;margin:16px 0}
+.fulfillment-opt{
+  flex:1;padding:14px;border-radius:var(--radius-md);border:1px solid var(--border);
+  display:flex;flex-direction:column;align-items:center;gap:8px;
+  font-size:13px;font-weight:500;cursor:pointer;transition:all var(--transition);min-height:44px;
+}
+.fulfillment-opt svg{width:24px;height:24px;color:var(--text-muted)}
+.fulfillment-opt:hover{border-color:var(--primary-solid)}
+.fulfillment-opt.selected{border-color:var(--primary-solid);background:rgba(99,102,241,.06)}
+.fulfillment-opt.selected svg{color:var(--primary-solid)}
+.fulfillment-opt:focus-visible{outline:2px solid var(--border-focus);outline-offset:2px}
+.schedule-confirm{margin-top:20px}
+
+/* ── Notification Drawer ─────────────────────────────── */
+.notif-overlay{
+  position:fixed;inset:0;background:var(--overlay);z-index:90;
+  opacity:0;pointer-events:none;transition:opacity .25s;
+}
+.notif-overlay.open{opacity:1;pointer-events:auto}
+.notif-drawer{
+  position:fixed;top:0;right:0;bottom:0;width:380px;max-width:100%;
+  background:var(--surface);border-left:1px solid var(--border);
+  z-index:91;transform:translateX(100%);transition:transform .3s cubic-bezier(.32,.72,0,1);
+  display:flex;flex-direction:column;
+}
+.notif-overlay.open .notif-drawer{transform:translateX(0)}
+.notif-header{display:flex;align-items:center;justify-content:space-between;padding:20px 20px 16px;border-bottom:1px solid var(--border)}
+.notif-header h2{font-size:16px;font-weight:700}
+.notif-list{flex:1;overflow-y:auto;padding:8px 12px}
+.notif-item{
+  display:flex;gap:12px;padding:12px;border-radius:var(--radius-sm);
+  transition:background var(--transition);cursor:pointer;
+}
+.notif-item:hover{background:var(--surface-hover)}
+.notif-item.unread{background:rgba(99,102,241,.04)}
+.notif-icon{width:36px;height:36px;border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.notif-icon.arrived{background:rgba(245,158,11,.1);color:var(--status-waiting)}
+.notif-icon.delivery{background:rgba(139,92,246,.1);color:var(--status-out)}
+.notif-icon.delivered-n{background:rgba(34,197,94,.1);color:var(--status-delivered)}
+.notif-icon svg{width:18px;height:18px}
+.notif-body{flex:1;min-width:0}
+.notif-body .title{font-size:13px;font-weight:600;line-height:1.4}
+.notif-body .desc{font-size:12px;color:var(--text-muted);line-height:1.4;margin-top:2px}
+.notif-body .time{font-size:11px;color:var(--text-muted);margin-top:4px;font-variant-numeric:tabular-nums}
+.unread-dot{width:8px;height:8px;border-radius:50%;background:var(--primary-solid);flex-shrink:0;margin-top:6px}
+
+/* ── Assistant Chat Panel ────────────────────────────── */
+.chat-view{display:none}
+.chat-view.active-view{display:flex;flex-direction:column;height:calc(100dvh - 48px)}
+.chat-messages{flex:1;overflow-y:auto;padding:0 0 16px;display:flex;flex-direction:column;gap:12px}
+.chat-msg{max-width:85%;padding:14px 16px;border-radius:var(--radius-md);font-size:14px;line-height:1.55}
+.chat-msg.assistant{background:var(--surface);border:1px solid var(--border);align-self:flex-start;border-bottom-left-radius:4px}
+.chat-msg.user{background:var(--primary-grad);color:#fff;align-self:flex-end;border-bottom-right-radius:4px}
+.chat-msg .embedded-card{margin-top:10px;padding:12px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--bg-flat)}
+.suggestion-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.suggestion-chip{
+  padding:6px 12px;border-radius:var(--radius-full);border:1px solid var(--border);
+  font-size:12px;font-weight:500;color:var(--text-muted);cursor:pointer;
+  transition:all var(--transition);
+}
+.suggestion-chip:hover{border-color:var(--primary-solid);color:var(--text)}
+.chat-input-bar{
+  display:flex;align-items:center;gap:8px;padding:12px 16px;
+  border-radius:var(--radius-md);border:1px solid var(--border);
+  background:var(--input-bg);margin-top:8px;
+}
+.chat-input-bar input{flex:1;font-size:14px;color:var(--text);min-height:24px}
+.chat-input-bar input::placeholder{color:var(--text-muted)}
+.chat-input-bar button{color:var(--primary-solid);width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:var(--radius-sm)}
+.chat-input-bar button:hover{background:rgba(99,102,241,.1)}
+
+/* ── Empty / Loading / Error ─────────────────────────── */
+.empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:48px 24px;text-align:center}
+.empty-state svg{width:64px;height:64px;color:var(--text-muted);margin-bottom:16px;opacity:.5}
+.empty-state h3{font-size:16px;font-weight:600;margin-bottom:4px}
+.empty-state p{font-size:13px;color:var(--text-muted);max-width:280px}
+.skeleton-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);padding:20px;margin-bottom:12px}
+.skeleton-line{height:14px;border-radius:4px;background:var(--skeleton);position:relative;overflow:hidden}
+.skeleton-line::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,var(--skeleton-shine),transparent);animation:shimmer 1.5s infinite}
+@keyframes shimmer{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
+.skeleton-line.w-60{width:60%}
+.skeleton-line.w-40{width:40%}
+.skeleton-line.w-80{width:80%}
+.skeleton-line+.skeleton-line{margin-top:10px}
+.error-state{display:flex;flex-direction:column;align-items:center;padding:48px 24px;text-align:center}
+.error-state svg{width:48px;height:48px;color:var(--status-issue);margin-bottom:12px}
+.error-state h3{font-size:16px;font-weight:600;margin-bottom:4px}
+.error-state p{font-size:13px;color:var(--text-muted);margin-bottom:16px}
+
+/* ── Search dialog (⌘K) ─────────────────────────────── */
+.search-overlay{position:fixed;inset:0;background:var(--overlay);z-index:110;opacity:0;pointer-events:none;transition:opacity .2s;display:flex;align-items:flex-start;justify-content:center;padding-top:15vh}
+.search-overlay.open{opacity:1;pointer-events:auto}
+.search-box{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius-md);width:480px;max-width:92%;
+  box-shadow:var(--shadow-lg);transform:scale(.97);opacity:0;
+  transition:transform .25s,opacity .25s;overflow:hidden;
+}
+.search-overlay.open .search-box{transform:scale(1);opacity:1}
+.search-input{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--border)}
+.search-input svg{width:18px;height:18px;color:var(--text-muted);flex-shrink:0}
+.search-input input{flex:1;font-size:15px;color:var(--text)}
+.search-input input::placeholder{color:var(--text-muted)}
+.search-input kbd{font-size:11px;color:var(--text-muted);border:1px solid var(--border);border-radius:4px;padding:2px 6px;font-family:inherit}
+.search-results{padding:8px;max-height:300px;overflow-y:auto}
+.search-result{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--radius-sm);cursor:pointer;transition:background var(--transition)}
+.search-result:hover{background:var(--surface-hover)}
+.search-result svg{width:16px;height:16px;color:var(--text-muted)}
+.search-result span{font-size:14px}
+
+/* ── Responsive ──────────────────────────────────────── */
+@media(max-width:1023px){
+  .sidebar{display:none}
+  .bottom-bar{display:block}
+  .main{margin-left:0;padding:16px 16px 80px}
+}
+@media(min-width:1024px){
+  .bottom-bar{display:none !important}
+}
+
+/* ── Reduced motion ──────────────────────────────────── */
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms !important;transition-duration:.01ms !important}
+}
+</style>
+</head>
+<body>
+
+<!-- ════ SIDEBAR (Desktop) ════ -->
+<aside class="sidebar" role="navigation" aria-label="Main navigation">
+  <div class="sidebar-brand">
+    <svg viewBox="0 0 28 28" fill="none"><rect width="28" height="28" rx="7" fill="url(#bg)"/><path d="M8 11l6-4 6 4v6l-6 4-6-4v-6z" fill="#fff" opacity=".9"/><defs><linearGradient id="bg" x1="0" y1="0" x2="28" y2="28"><stop stop-color="#6366F1"/><stop offset="1" stop-color="#22D3EE"/></linearGradient></defs></svg>
+    <span>ParcelTime</span>
+  </div>
+  <nav class="sidebar-nav">
+    <button class="nav-item active" data-nav="home" aria-current="page">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0a1 1 0 01-1-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 01-1 1"/></svg>
+      Home
+    </button>
+    <button class="nav-item" data-nav="parcels">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+      Parcels
+      <span class="nav-badge" aria-label="2 actions needed">2</span>
+    </button>
+    <button class="nav-item" data-nav="assistant">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+      Assistant
+    </button>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="sidebar-user">
+      <div class="avatar">PS</div>
+      <div class="meta"><span class="name">Priya Sharma</span><span class="unit">Unit A-102 · Greenwood Palms</span></div>
+    </div>
+  </div>
+</aside>
+
+<!-- ════ BOTTOM BAR (Mobile) ════ -->
+<div class="bottom-bar" role="navigation" aria-label="Main navigation">
+  <div class="bottom-bar-inner">
+    <button class="tab-item active" data-nav="home" aria-label="Home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0a1 1 0 01-1-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 01-1 1"/></svg>Home</button>
+    <button class="tab-item" data-nav="parcels" aria-label="Parcels"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>Parcels<span class="tab-badge"></span></button>
+    <button class="tab-item" data-nav="assistant" aria-label="Assistant"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>Assistant</button>
+  </div>
+</div>
+
+<!-- ════ MAIN CONTENT ════ -->
+<main class="main">
+<div class="main-inner">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="greeting">
+      <h1 id="greeting-text">Good evening, Priya</h1>
+      <p>Unit A-102 · Greenwood Palms Residences</p>
+    </div>
+    <div class="header-actions">
+      <button class="icon-btn" id="search-btn" aria-label="Search (⌘K)" title="Search ⌘K">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+      </button>
+      <button class="icon-btn" id="notif-btn" aria-label="Notifications">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+        <span class="dot"></span>
+      </button>
+      <button class="icon-btn theme-toggle" id="theme-btn" aria-label="Toggle theme">
+        <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+        <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- ── HOME VIEW ── -->
+  <div class="home-view active-view" id="view-home">
+
+    <!-- Needs action -->
+    <div class="section-label">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      Needs your action · <span class="count">2</span>
+    </div>
+
+    <!-- Card 1: Amazon — Waiting -->
+    <div class="parcel-card" id="card-8942">
+      <div class="card-top">
+        <div class="card-courier">
+          <div class="courier-icon amazon">A</div>
+          <div class="courier-info">
+            <div class="name">Amazon Logistics</div>
+            <div class="id">PT-8942</div>
+          </div>
+        </div>
+        <span class="status-chip waiting" role="status"><span class="dot" aria-hidden="true"></span>Waiting at gate</span>
+      </div>
+      <div class="card-location">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        Gate 1 Vault · Shelf A
+      </div>
+      <div class="tracker" aria-label="Status: Arrived at gate">
+        <div class="tracker-step done"><div class="step-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><div class="step-line"></div></div>
+        <div class="tracker-step"><div class="step-dot"></div><div class="step-line"></div></div>
+        <div class="tracker-step"><div class="step-dot"></div><div class="step-line"></div></div>
+        <div class="tracker-step"><div class="step-dot"></div></div>
+      </div>
+      <div class="card-actions">
+        <button class="btn btn-primary" onclick="openScheduleSheet('PT-8942','Amazon Logistics')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          Schedule delivery
+        </button>
+        <button class="btn btn-secondary">Details</button>
+      </div>
+    </div>
+
+    <!-- Card 2: Myntra — Waiting -->
+    <div class="parcel-card" id="card-5519">
+      <div class="card-top">
+        <div class="card-courier">
+          <div class="courier-icon myntra">M</div>
+          <div class="courier-info">
+            <div class="name">Myntra Fashion</div>
+            <div class="id">PT-5519</div>
+          </div>
+        </div>
+        <span class="status-chip waiting" role="status"><span class="dot" aria-hidden="true"></span>Waiting at gate</span>
+      </div>
+      <div class="card-location">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        Gate 1 Vault · Shelf B
+      </div>
+      <div class="tracker" aria-label="Status: Arrived at gate">
+        <div class="tracker-step done"><div class="step-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><div class="step-line"></div></div>
+        <div class="tracker-step"><div class="step-dot"></div><div class="step-line"></div></div>
+        <div class="tracker-step"><div class="step-dot"></div><div class="step-line"></div></div>
+        <div class="tracker-step"><div class="step-dot"></div></div>
+      </div>
+      <div class="card-actions">
+        <button class="btn btn-primary" onclick="openScheduleSheet('PT-5519','Myntra Fashion')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          Schedule delivery
+        </button>
+        <button class="btn btn-secondary">Details</button>
+      </div>
+    </div>
+
+    <!-- Section: In progress -->
+    <div class="section-label" style="margin-top:24px">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      In progress · <span class="count">1</span>
+    </div>
+
+    <!-- Card 3: Delhivery — Out for delivery -->
+    <div class="parcel-card" id="card-7621">
+      <div class="card-top">
+        <div class="card-courier">
+          <div class="courier-icon delhivery">D</div>
+          <div class="courier-info">
+            <div class="name">Delhivery</div>
+            <div class="id">PT-7621</div>
+          </div>
+        </div>
+        <span class="status-chip out" role="status"><span class="dot" aria-hidden="true"></span>Out for delivery</span>
+      </div>
+      <div class="card-location">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        With executive Rajesh Kumar
+      </div>
+      <div class="tracker" aria-label="Status: Out for delivery">
+        <div class="tracker-step done"><div class="step-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><div class="step-line"></div></div>
+        <div class="tracker-step done"><div class="step-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><div class="step-line"></div></div>
+        <div class="tracker-step active"><div class="step-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div><div class="step-line"></div></div>
+        <div class="tracker-step"><div class="step-dot"></div></div>
+      </div>
+      <div class="eta-strip">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        <span class="eta-text" id="eta-text">ETA ~5 min</span>
+        <div class="eta-bar"><div class="eta-fill" id="eta-fill" style="width:75%"></div></div>
+      </div>
+      <div class="card-actions">
+        <button class="btn btn-primary" onclick="openOtpSheet()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+          View OTP
+        </button>
+        <button class="btn btn-secondary">Track</button>
+      </div>
+    </div>
+
+    <!-- Loading skeleton demo -->
+    <div class="section-label" style="margin-top:24px">Loading state preview</div>
+    <div class="skeleton-card" aria-hidden="true">
+      <div class="skeleton-line w-60"></div>
+      <div class="skeleton-line w-40"></div>
+      <div class="skeleton-line w-80"></div>
+    </div>
+
+    <!-- Empty state demo -->
+    <div class="section-label" style="margin-top:16px">Empty state preview</div>
+    <div class="empty-state" style="border:1px dashed var(--border);border-radius:var(--radius-md)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+      <h3>No parcels right now</h3>
+      <p>When a courier drops off a package at Greenwood Palms, it will appear here.</p>
+    </div>
+  </div>
+
+  <!-- ── ASSISTANT VIEW ── -->
+  <div class="chat-view" id="view-assistant">
+    <div class="chat-messages" id="chat-messages">
+      <div class="chat-msg assistant">
+        Hi Priya! You have <strong>2 parcels waiting</strong> at the gate and <strong>1 out for delivery</strong>. What can I help with?
+        <div class="suggestion-chips">
+          <button class="suggestion-chip" onclick="chatSuggest('Schedule my Amazon parcel')">Schedule Amazon parcel</button>
+          <button class="suggestion-chip" onclick="chatSuggest('Show my OTP')">Show my OTP</button>
+          <button class="suggestion-chip" onclick="chatSuggest('Where is PT-7621?')">Where is PT-7621?</button>
+        </div>
+      </div>
+    </div>
+    <div class="chat-input-bar">
+      <input type="text" id="chat-input" placeholder="Ask about your parcels…" aria-label="Chat message">
+      <button aria-label="Send message" onclick="sendChat()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+      </button>
+    </div>
+  </div>
+
+</div>
+</main>
+
+<!-- ════ OTP BOTTOM SHEET ════ -->
+<div class="sheet-overlay" id="otp-sheet" aria-modal="true" role="dialog" aria-label="Handover OTP">
+  <div class="sheet" id="otp-sheet-content">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">Handover OTP</div>
+    <div class="sheet-subtitle">Show this code to the delivery executive for PT-7621</div>
+    <div class="otp-display" id="otp-display" onclick="toggleOtp()" role="button" tabindex="0" aria-label="Tap to reveal OTP">
+      <span class="otp-digits hidden" id="otp-digits">4 8 2 9 1 0</span>
+      <div class="otp-reveal-hint" id="otp-hint">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        <span>Tap to reveal</span>
+      </div>
+    </div>
+    <div class="otp-countdown">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      Expires in <span class="countdown-time" id="otp-timer">5:00</span>
+    </div>
+    <div class="otp-actions">
+      <button class="btn btn-primary" id="otp-copy-btn" onclick="copyOtp()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+        Copy code
+      </button>
+      <button class="btn btn-secondary" onclick="closeOtpSheet()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════ SCHEDULE BOTTOM SHEET ════ -->
+<div class="sheet-overlay" id="schedule-sheet" aria-modal="true" role="dialog" aria-label="Schedule delivery">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title" id="sched-title">Schedule delivery</div>
+    <div class="sheet-subtitle" id="sched-subtitle">Choose a time slot for your parcel</div>
+
+    <div class="schedule-content active-sheet-content" id="sched-step1">
+      <div class="slot-group-label">Today</div>
+      <div class="slot-chips">
+        <button class="slot-chip" onclick="selectSlot(this)">2:00 – 4:00 PM</button>
+        <button class="slot-chip" onclick="selectSlot(this)">6:30 – 8:30 PM</button>
+      </div>
+      <div class="slot-group-label">Tomorrow</div>
+      <div class="slot-chips">
+        <button class="slot-chip" onclick="selectSlot(this)">9:00 – 11:00 AM</button>
+        <button class="slot-chip" onclick="selectSlot(this)">2:00 – 4:00 PM</button>
+        <button class="slot-chip" onclick="selectSlot(this)">6:30 – 8:30 PM</button>
+      </div>
+      <div class="fulfillment-options">
+        <button class="fulfillment-opt selected" onclick="selectFulfillment(this)" aria-label="Deliver to door">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          Deliver to door
+        </button>
+        <button class="fulfillment-opt" onclick="selectFulfillment(this)" aria-label="Self-pickup at gate">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="8.5" cy="7" r="4"/></svg>
+          Self-pickup at gate
+        </button>
+      </div>
+      <button class="btn btn-primary schedule-confirm" style="width:100%" id="sched-confirm-btn" onclick="confirmSchedule()" disabled>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        Confirm schedule
+      </button>
+    </div>
+
+    <div class="schedule-content" id="sched-step2">
+      <div style="display:flex;flex-direction:column;align-items:center;padding:24px 0;text-align:center">
+        <div style="width:56px;height:56px;border-radius:50%;background:rgba(34,197,94,.12);display:flex;align-items:center;justify-content:center;margin-bottom:16px">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:28px;height:28px"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <div style="font-size:18px;font-weight:700;margin-bottom:4px">Delivery scheduled!</div>
+        <div style="font-size:13px;color:var(--text-muted)" id="sched-confirm-text">Tomorrow, 9:00 – 11:00 AM · Deliver to door</div>
+        <button class="btn btn-secondary" style="margin-top:20px" onclick="closeScheduleSheet()">Done</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════ NOTIFICATION DRAWER ════ -->
+<div class="notif-overlay" id="notif-overlay">
+  <div class="notif-drawer">
+    <div class="notif-header">
+      <h2>Notifications</h2>
+      <button class="icon-btn" onclick="closeNotifDrawer()" aria-label="Close notifications">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="notif-list">
+      <div class="notif-item unread">
+        <div class="notif-icon delivery"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
+        <div class="notif-body">
+          <div class="title">PT-7621 is out for delivery</div>
+          <div class="desc">Rajesh Kumar is heading to Tower A with your Delhivery parcel. ETA ~5 min.</div>
+          <div class="time">2 min ago</div>
+        </div>
+        <div class="unread-dot"></div>
+      </div>
+      <div class="notif-item unread">
+        <div class="notif-icon arrived"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg></div>
+        <div class="notif-body">
+          <div class="title">New parcel arrived — PT-5519</div>
+          <div class="desc">Your Myntra Fashion parcel has been stored in Gate 1 Vault, Shelf B. Schedule your delivery.</div>
+          <div class="time">45 min ago</div>
+        </div>
+        <div class="unread-dot"></div>
+      </div>
+      <div class="notif-item">
+        <div class="notif-icon arrived"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg></div>
+        <div class="notif-body">
+          <div class="title">New parcel arrived — PT-8942</div>
+          <div class="desc">Your Amazon Logistics parcel has been stored in Gate 1 Vault, Shelf A.</div>
+          <div class="time">3 hours ago</div>
+        </div>
+      </div>
+      <div class="notif-item">
+        <div class="notif-icon delivered-n"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+        <div class="notif-body">
+          <div class="title">PT-6310 delivered</div>
+          <div class="desc">Your DTDC parcel was collected via self-pickup at Gate 1.</div>
+          <div class="time">Yesterday</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════ SEARCH OVERLAY (⌘K) ════ -->
+<div class="search-overlay" id="search-overlay">
+  <div class="search-box">
+    <div class="search-input">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+      <input type="text" placeholder="Search parcels, tracking IDs…" id="search-field" autofocus aria-label="Search">
+      <kbd>Esc</kbd>
+    </div>
+    <div class="search-results">
+      <div class="search-result" onclick="closeSearch()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>
+        <span>PT-8942 · Amazon Logistics · Waiting at gate</span>
+      </div>
+      <div class="search-result" onclick="closeSearch()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>
+        <span>PT-5519 · Myntra Fashion · Waiting at gate</span>
+      </div>
+      <div class="search-result" onclick="closeSearch()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>
+        <span>PT-7621 · Delhivery · Out for delivery</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════ JAVASCRIPT ════ -->
+<script>
+/* ── Theme ── */
+(function initTheme(){
+  const saved=localStorage.getItem('pt-theme');
+  if(saved){document.documentElement.dataset.theme=saved}
+  else if(matchMedia('(prefers-color-scheme:light)').matches){document.documentElement.dataset.theme='light'}
+})();
+document.getElementById('theme-btn').onclick=()=>{
+  const next=document.documentElement.dataset.theme==='dark'?'light':'dark';
+  document.documentElement.dataset.theme=next;
+  localStorage.setItem('pt-theme',next);
+};
+
+/* ── Greeting ── */
+(function setGreeting(){
+  const h=new Date().getHours();
+  const g=h<12?'Good morning':h<17?'Good afternoon':'Good evening';
+  document.getElementById('greeting-text').textContent=g+', Priya';
+})();
+
+/* ── Navigation ── */
+document.querySelectorAll('[data-nav]').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    const target=btn.dataset.nav;
+    document.querySelectorAll('[data-nav]').forEach(b=>{b.classList.remove('active');b.removeAttribute('aria-current')});
+    document.querySelectorAll('[data-nav="'+target+'"]').forEach(b=>{b.classList.add('active');b.setAttribute('aria-current','page')});
+    document.querySelectorAll('.active-view').forEach(v=>v.classList.remove('active-view'));
+    const viewMap={home:'view-home',parcels:'view-home',assistant:'view-assistant'};
+    const el=document.getElementById(viewMap[target]);
+    if(el){el.classList.add('active-view')}
+  });
+});
+
+/* ── OTP Sheet ── */
+let otpRevealed=false;let otpSeconds=300;let otpInterval;
+function openOtpSheet(){
+  document.getElementById('otp-sheet').classList.add('open');
+  otpRevealed=false;
+  document.getElementById('otp-digits').classList.add('hidden');
+  document.getElementById('otp-display').classList.remove('revealed');
+  document.getElementById('otp-hint').style.opacity='1';
+  otpSeconds=300;
+  updateOtpTimer();
+  clearInterval(otpInterval);
+  otpInterval=setInterval(()=>{otpSeconds--;updateOtpTimer();if(otpSeconds<=0){clearInterval(otpInterval);closeOtpSheet()}},1000);
+  document.body.style.overflow='hidden';
+}
+function closeOtpSheet(){
+  document.getElementById('otp-sheet').classList.remove('open');
+  clearInterval(otpInterval);
+  otpRevealed=false;
+  document.body.style.overflow='';
+}
+function toggleOtp(){
+  otpRevealed=!otpRevealed;
+  document.getElementById('otp-digits').classList.toggle('hidden',!otpRevealed);
+  document.getElementById('otp-display').classList.toggle('revealed',otpRevealed);
+  if(otpRevealed){
+    setTimeout(()=>{
+      otpRevealed=false;
+      document.getElementById('otp-digits').classList.add('hidden');
+      document.getElementById('otp-display').classList.remove('revealed');
+    },15000);
+  }
+}
+function updateOtpTimer(){
+  const m=Math.floor(otpSeconds/60);const s=otpSeconds%60;
+  document.getElementById('otp-timer').textContent=m+':'+(s<10?'0':'')+s;
+}
+function copyOtp(){
+  navigator.clipboard.writeText('482910').then(()=>{
+    const btn=document.getElementById('otp-copy-btn');
+    btn.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><polyline points="20 6 9 17 4 12"/></svg> Copied!';
+    setTimeout(()=>{btn.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg> Copy code'},2000);
+  });
+}
+document.getElementById('otp-sheet').addEventListener('click',e=>{if(e.target.id==='otp-sheet')closeOtpSheet()});
+document.getElementById('otp-display').addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();toggleOtp()}});
+
+/* ── Schedule Sheet ── */
+let schedParcel='';let selectedSlot=null;let selectedFulfillment='deliver';
+function openScheduleSheet(id,courier){
+  schedParcel=id;selectedSlot=null;selectedFulfillment='deliver';
+  document.getElementById('sched-title').textContent='Schedule '+id;
+  document.getElementById('sched-subtitle').textContent=courier+' · Choose a delivery window';
+  document.querySelectorAll('.slot-chip').forEach(c=>c.classList.remove('selected'));
+  document.querySelectorAll('.fulfillment-opt').forEach(o=>o.classList.remove('selected'));
+  document.querySelectorAll('.fulfillment-opt')[0].classList.add('selected');
+  document.getElementById('sched-confirm-btn').disabled=true;
+  document.getElementById('sched-step1').classList.add('active-sheet-content');
+  document.getElementById('sched-step2').classList.remove('active-sheet-content');
+  document.getElementById('schedule-sheet').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function closeScheduleSheet(){
+  document.getElementById('schedule-sheet').classList.remove('open');
+  document.body.style.overflow='';
+}
+function selectSlot(el){
+  document.querySelectorAll('.slot-chip').forEach(c=>c.classList.remove('selected'));
+  el.classList.add('selected');selectedSlot=el.textContent;
+  document.getElementById('sched-confirm-btn').disabled=false;
+}
+function selectFulfillment(el){
+  document.querySelectorAll('.fulfillment-opt').forEach(o=>o.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedFulfillment=el.textContent.trim().includes('door')?'deliver':'pickup';
+}
+function confirmSchedule(){
+  const mode=selectedFulfillment==='deliver'?'Deliver to door':'Self-pickup at gate';
+  const day=selectedSlot;
+  document.getElementById('sched-confirm-text').textContent=day+' · '+mode;
+  document.getElementById('sched-step1').classList.remove('active-sheet-content');
+  document.getElementById('sched-step2').classList.add('active-sheet-content');
+}
+document.getElementById('schedule-sheet').addEventListener('click',e=>{if(e.target.id==='schedule-sheet')closeScheduleSheet()});
+
+/* ── Notifications ── */
+function openNotifDrawer(){document.getElementById('notif-overlay').classList.add('open');document.body.style.overflow='hidden'}
+function closeNotifDrawer(){document.getElementById('notif-overlay').classList.remove('open');document.body.style.overflow=''}
+document.getElementById('notif-btn').onclick=openNotifDrawer;
+document.getElementById('notif-overlay').addEventListener('click',e=>{if(e.target.id==='notif-overlay')closeNotifDrawer()});
+
+/* ── Search ── */
+function openSearch(){document.getElementById('search-overlay').classList.add('open');setTimeout(()=>document.getElementById('search-field').focus(),100)}
+function closeSearch(){document.getElementById('search-overlay').classList.remove('open')}
+document.getElementById('search-btn').onclick=openSearch;
+document.getElementById('search-overlay').addEventListener('click',e=>{if(e.target.id==='search-overlay')closeSearch()});
+document.addEventListener('keydown',e=>{
+  if((e.metaKey||e.ctrlKey)&&e.key==='k'){e.preventDefault();openSearch()}
+  if(e.key==='Escape'){closeSearch();closeNotifDrawer();closeOtpSheet();closeScheduleSheet()}
+});
+
+/* ── ETA Countdown ── */
+let etaSeconds=300;
+setInterval(()=>{
+  if(etaSeconds>0)etaSeconds--;
+  const m=Math.floor(etaSeconds/60);
+  document.getElementById('eta-text').textContent='ETA ~'+m+' min';
+  document.getElementById('eta-fill').style.width=((300-etaSeconds)/300*100)+'%';
+},1000);
+
+/* ── Chat ── */
+function sendChat(){
+  const input=document.getElementById('chat-input');
+  const text=input.value.trim();if(!text)return;
+  addChatMsg('user',text);input.value='';
+  setTimeout(()=>{
+    if(text.toLowerCase().includes('otp')){
+      addChatMsg('assistant','Your OTP for PT-7621 is ready. I never show codes in chat for security — use the button below. <div class="embedded-card"><strong>PT-7621</strong> · Delhivery · Out for delivery<br><button class="btn btn-primary" style="margin-top:8px;padding:8px 14px;font-size:12px" onclick="openOtpSheet()">🔐 View OTP securely</button></div>');
+    }else if(text.toLowerCase().includes('schedule')||text.toLowerCase().includes('amazon')){
+      addChatMsg('assistant','Sure! Here\'s your Amazon parcel ready to schedule. <div class="embedded-card"><strong>PT-8942</strong> · Amazon Logistics · Waiting at gate<br><button class="btn btn-primary" style="margin-top:8px;padding:8px 14px;font-size:12px" onclick="openScheduleSheet(\'PT-8942\',\'Amazon Logistics\')">📅 Schedule delivery</button></div>');
+    }else if(text.toLowerCase().includes('7621')||text.toLowerCase().includes('where')){
+      addChatMsg('assistant','PT-7621 from Delhivery is <strong>out for delivery</strong> with Rajesh Kumar. ETA approximately 5 minutes to Tower A. <div class="embedded-card"><strong>PT-7621</strong> · Delhivery<br>📍 Near Tower A entrance<br>⏱ ETA ~5 min</div>');
+    }else{
+      addChatMsg('assistant','I can help you schedule deliveries, check parcel status, or reveal your OTP securely. What would you like to do?');
+    }
+  },600);
+}
+function chatSuggest(text){document.getElementById('chat-input').value=text;sendChat()}
+function addChatMsg(role,html){
+  const d=document.createElement('div');d.className='chat-msg '+role;d.innerHTML=html;
+  document.getElementById('chat-messages').appendChild(d);
+  d.scrollIntoView({behavior:'smooth',block:'end'});
+}
+document.getElementById('chat-input').addEventListener('keydown',e=>{if(e.key==='Enter')sendChat()});
+</script>
+</body>
+</html>
